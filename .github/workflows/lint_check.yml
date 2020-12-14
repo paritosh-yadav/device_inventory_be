@@ -12,6 +12,11 @@ on:
 jobs:
   test_pull_request:
     runs-on: ubuntu-latest
+    services:
+      mongodb:  
+        image: mongo:3.4.23
+        ports: 
+          - 27017:27017
     env:
       PORT: 3000
       MONGODB_URL: mongodb://localhost:27017/node-boilerplate
