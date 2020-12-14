@@ -19,7 +19,7 @@ if (config.env !== 'test') {
   app.use(morgan.errorHandler);
 }
 
-// set security HTTP headers
+// set security HTTP headers check
 app.use(helmet());
 
 // parse json request body
