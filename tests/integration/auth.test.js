@@ -398,7 +398,7 @@ describe('Auth middleware', () => {
 
     expect(next).toHaveBeenCalledWith(expect.any(ApiError));
     expect(next).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: httpStatus.UNAUTHORIZED, message: 'Please authenticate' })
+      expect.objectContaining({ statusCode: httpStatus.UNAUTHORIZED, message: 'Invalid token type' })
     );
   });
 
