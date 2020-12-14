@@ -5,17 +5,17 @@ name: Node.js CI
 
 on:
   push:
-    branches: [master]
+    branches: [develop]
   pull_request:
-    branches: [master]
+    branches: [develop]
 
 jobs:
   test_pull_request:
     runs-on: ubuntu-latest
     services:
-      mongodb:  
+      mongodb:
         image: mongo:3.4.23
-        ports: 
+        ports:
           - 27017:27017
     env:
       PORT: 3000
