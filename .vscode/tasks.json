@@ -1,0 +1,49 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "command": "brew services start mongodb-community@4.4",
+      "problemMatcher": [],
+      "label": "Start DB server",
+      "detail": "MongoDB server",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "shell",
+      "command": "brew services stop mongodb-community@4.4",
+      "problemMatcher": [],
+      "label": "Stop DB server",
+      "detail": "MongoDB server",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "shell",
+      "command": "yarn dev",
+      "problemMatcher": [],
+      "label": "Start dev",
+      "detail": "Run dev server",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "shell",
+      "command": "yarn test",
+      "problemMatcher": [],
+      "label": "Start test",
+      "detail": "Run test cases",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
