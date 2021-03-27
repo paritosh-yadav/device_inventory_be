@@ -10,8 +10,8 @@ const deviceSchema = new mongoose.Schema(
       trim: true,
       validate(value) {
         // Blacklisting the '' (space), as its not part of isAlpha
-        if (!validator.isAlpha(validator.blacklist(value, ' '))) {
-          throw new Error('Modal name should conatin only alphabets');
+        if (!validator.isAlphanumeric(validator.blacklist(value, ' '))) {
+          throw new Error('Modal name should be alphanumeric');
         }
       },
     },
@@ -62,7 +62,7 @@ const deviceSchema = new mongoose.Schema(
       required: true,
       trim: true,
       validate(value) {
-        if (!validator.isAlpha(value)) {
+        if (!validator.isAlpha(validator.blacklist(value, ' '))) {
           throw new Error('Manufacturer name should conatin only alphabets');
         }
       },

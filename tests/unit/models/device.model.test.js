@@ -6,7 +6,7 @@ describe('Device model', () => {
     let newDevice;
     beforeEach(() => {
       newDevice = {
-        modalName: faker.lorem.word(),
+        modalName: faker.random.alphaNumeric(),
         srNo: faker.random.alphaNumeric(),
         uuid: faker.random.alphaNumeric(),
         variant: faker.random.alphaNumeric(),
@@ -17,8 +17,8 @@ describe('Device model', () => {
     test('should correctly validate a valid device', async () => {
       await expect(new Device(newDevice).validate()).resolves.toBeUndefined();
     });
-    test('should throw validation error is modalName does not contain alphabets', async () => {
-      newDevice.modalName = 123;
+    test('should throw validation error is modal name is not alphanumeric', async () => {
+      newDevice.modalName = '#@$%^%!';
       await expect(new Device(newDevice).validate()).rejects.toThrow();
     });
     test('should throw validation error is serial number is not alphanumeric', async () => {
@@ -31,6 +31,14 @@ describe('Device model', () => {
     });
     test('should throw validation error is varient is not alphanumeric', async () => {
       newDevice.variant = '#@$%^%!';
+      await expect(new Device(newDevice).validate()).rejects.toThrow();
+    });
+    test('should throw validation error is category is not alpha', async () => {
+      newDevice.category = 12;
+      await expect(new Device(newDevice).validate()).rejects.toThrow();
+    });
+    test('should throw validation error is manufacturer is not alpha', async () => {
+      newDevice.manufacturer = 131;
       await expect(new Device(newDevice).validate()).rejects.toThrow();
     });
   });
