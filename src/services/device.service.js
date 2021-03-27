@@ -11,6 +11,12 @@ const addDevice = async (deviceBody) => {
   }
 };
 
+const getDevices = async (filter, options) => {
+  const devices = await Device.paginate(filter, options);
+  return devices;
+};
+
 module.exports = {
   addDevice,
+  getDevices,
 };

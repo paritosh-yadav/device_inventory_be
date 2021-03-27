@@ -19,6 +19,35 @@ components:
         name: fake name
         role: user
 
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+        modalName:
+          type: String
+        srNo:
+          type: String
+        uuid:
+          type: String
+        variant:
+          type: String
+        category:
+          type: String
+        manufacturer:
+          type: String
+        isIssued:
+          type: Boolean
+      example:
+        id: 5ebac534954b54139806c112
+        modalName: iPhone 12,
+        srNo: 123dadda1,
+        uuid: asdasd231323,
+        variant: 128GB,
+        category: Mobile,
+        manufacturer: Apple,
+        isIssued: true
+
     Token:
       type: object
       properties:
@@ -57,6 +86,24 @@ components:
           example:
             code: 400
             message: Email already taken
+    DuplicateSrNo:
+      description: Serial number already taken
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: Serial number already taken
+    DuplicateUUID:
+      description: UUID already taken
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: UUID already taken
     Unauthorized:
       description: Unauthorized
       content:
