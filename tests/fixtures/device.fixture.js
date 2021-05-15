@@ -25,5 +25,8 @@ const mockDeviceTwo = {
 const insertDevices = async (devices) => {
   await Device.insertMany(devices.map((device) => ({ ...device })));
 };
+const deleteDevice = async (device) => {
+  await Device.findOneAndDelete(device);
+};
 
-module.exports = { mockDeviceOne, mockDeviceTwo, insertDevices };
+module.exports = { mockDeviceOne, mockDeviceTwo, insertDevices, deleteDevice };

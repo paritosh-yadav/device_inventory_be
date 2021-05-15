@@ -80,6 +80,26 @@ const deviceSchema = new mongoose.Schema(
 deviceSchema.plugin(toJSON);
 deviceSchema.plugin(paginate);
 
+/**
+ * Check if srNo is taken
+ * @param {string} srNo - The device's srNo
+ * @returns {Promise<boolean>}
+ */
+deviceSchema.statics.isSrNoTaken = async function (srNo) {
+  const device = await this.findOne({ srNo });
+  return !!device;
+};
+
+/**
+ * Check if uuid is taken
+ * @param {string} uuid - The device's uuid
+ * @returns {Promise<boolean>}
+ */
+deviceSchema.statics.isUuidTaken = async function (uuid) {
+  const device = await this.findOne({ uuid });
+  return !!device;
+};
+
 const Device = mongoose.model('Device', deviceSchema);
 
 module.exports = Device;
