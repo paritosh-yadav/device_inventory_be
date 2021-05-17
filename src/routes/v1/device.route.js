@@ -52,18 +52,22 @@ module.exports = router;
  *              properties:
  *                modalName:
  *                  type: string
+ *                  description: must be alphanumeric
  *                srNo:
  *                  type: string
- *                  description: must be unique
+ *                  description: must be unique alphanumeric
  *                uuid:
  *                  type: string
- *                  description: must be unique
+ *                  description: must be unique alphanumeric
  *                variant:
- *                   type: string
+ *                  type: string
+ *                  description: must be alphanumeric
  *                category:
- *                   type: string
+ *                  type: string
+ *                  description: must be alphabets only
  *                manufacturer:
- *                   type: string
+ *                  type: string
+ *                  description: must be alphabets only
  *              example:
  *                modalName: iPhone 12
  *                srNo: device_serial_number
@@ -203,21 +207,34 @@ module.exports = router;
  *            schema:
  *              type: object
  *              properties:
- *                name:
+ *                modalName:
  *                  type: string
- *                email:
+ *                  description: must be alphanumeric
+ *                srNo:
  *                  type: string
- *                  format: email
- *                  description: must be unique
- *                password:
+ *                  description: must be unique alphanumeric
+ *                uuid:
  *                  type: string
- *                  format: password
- *                  minLength: 8
- *                  description: At least one number and one letter
+ *                  description: must be unique alphanumeric
+ *                variant:
+ *                  type: string
+ *                  description: must be alphanumeric
+ *                category:
+ *                  type: string
+ *                  description: must be alphabets only
+ *                manufacturer:
+ *                  type: string
+ *                  description: must be alphabets only
+ *                isIssued:
+ *                   type: boolean
  *              example:
- *                name: fake name
- *                email: fake@example.com
- *                password: password1
+ *                modalName: iPhone 12
+ *                srNo: 123dadda1
+ *                uuid: asdasd231323
+ *                variant: 128GB
+ *                category: Mobile
+ *                manufacturer: Apple
+ *                isIssued: true
  *      responses:
  *        "200":
  *          description: OK
