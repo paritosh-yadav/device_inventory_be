@@ -9,7 +9,13 @@ const router = express.Router();
 router
   .route('/')
   .post(auth('addDevice'), validate(deviceValidation.addDevice), deviceController.addDevice)
-  .get(auth('getAlldevices'), validate(deviceValidation.getDevices), deviceController.getDevices);
+  .get(auth('getDevices'), validate(deviceValidation.getDevices), deviceController.getDevices);
+
+router
+  .route('/:deviceId')
+  .get(auth('getDevices'), validate(deviceValidation.getDevice), deviceController.getDevice)
+  .patch(auth('updateDevice'), validate(deviceValidation.updateDevice), deviceController.updateDevice)
+  .delete(auth('deleteDevice'), validate(deviceValidation.deleteDevice), deviceController.deleteDevice);
 
 module.exports = router;
 
@@ -144,4 +150,110 @@ module.exports = router;
  *          $ref: '#/components/responses/Unauthorized'
  *        "403":
  *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /devices/{id}:
+ *    get:
+ *      summary: Get a device
+ *      description: Device details will be provided based on unique id.
+ *      tags: [Devices]
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - in: path
+ *          name: id
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: device id
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/Device'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *        "404":
+ *          $ref: '#/components/responses/NotFound'
+ *
+ *    patch:
+ *      summary: Update a device
+ *      description: Device details will be updated.
+ *      tags: [Devices]
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - in: path
+ *          name: id
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: Device id
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                name:
+ *                  type: string
+ *                email:
+ *                  type: string
+ *                  format: email
+ *                  description: must be unique
+ *                password:
+ *                  type: string
+ *                  format: password
+ *                  minLength: 8
+ *                  description: At least one number and one letter
+ *              example:
+ *                name: fake name
+ *                email: fake@example.com
+ *                password: password1
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/Device'
+ *        "400":
+ *          $ref: '#/components/responses/DuplicateEmail'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *        "404":
+ *          $ref: '#/components/responses/NotFound'
+ *
+ *    delete:
+ *      summary: Delete a device
+ *      description: Device will be deleted.
+ *      tags: [Devices]
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - in: path
+ *          name: id
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: Device id
+ *      responses:
+ *        "200":
+ *          description: No content
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *        "404":
+ *          $ref: '#/components/responses/NotFound'
  */
