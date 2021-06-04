@@ -387,7 +387,7 @@ describe('Device routes', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
-        isIssued: faker.random.boolean(),
+        isIssued: faker.datatype.boolean(),
       };
 
       const res = await request(app)
@@ -415,7 +415,7 @@ describe('Device routes', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
-        isIssued: faker.random.boolean(),
+        isIssued: faker.datatype.boolean(),
       };
       await request(app).patch(`/v1/devices/${mockDeviceOne._id}`).send(updateBody).expect(httpStatus.UNAUTHORIZED);
     });
@@ -427,7 +427,7 @@ describe('Device routes', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
-        isIssued: faker.random.boolean(),
+        isIssued: faker.datatype.boolean(),
       };
 
       await request(app)
@@ -444,7 +444,7 @@ describe('Device routes', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
-        isIssued: faker.random.boolean(),
+        isIssued: faker.datatype.boolean(),
       };
 
       await request(app)
