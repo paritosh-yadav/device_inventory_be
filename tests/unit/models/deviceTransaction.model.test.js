@@ -11,7 +11,7 @@ describe('Device transaction', () => {
         userId: mongoose.Types.ObjectId(),
         issuedOn: faker.datatype.datetime(),
         dueDate: faker.datatype.datetime(),
-        submittedOn: faker.datatype.datetime(),
+        submittedOn: null,
       };
       //   console.log('newTransaction', newTransaction);
     });
@@ -39,8 +39,8 @@ describe('Device transaction', () => {
       await expect(new DeviceTransaction(newTransaction).validate()).rejects.toThrow();
     });
 
-    test('Should throw validation error if submittedOn is not valid date', async () => {
-      newTransaction.submittedOn = 'invalidDate';
+    test('Should throw validation error if submittedOn is not null', async () => {
+      newTransaction.submittedOn = 'notnull';
       await expect(new DeviceTransaction(newTransaction).validate()).rejects.toThrow();
     });
   });

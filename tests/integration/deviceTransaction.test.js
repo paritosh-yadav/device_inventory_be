@@ -51,7 +51,7 @@ describe('Device transaction route', () => {
         userId: newTransaction.userId.toString(),
         issuedOn: expect.anything(),
         dueDate: new Date(newTransaction.dueDate).toISOString(),
-        submittedOn: expect.anything(),
+        submittedOn: null,
       });
 
       const dbDeviceTransaction = await DeviceTransaction.findById(res.body.id);
@@ -63,7 +63,7 @@ describe('Device transaction route', () => {
         dueDate: newTransaction.dueDate,
         id: res.body.id,
         issuedOn: new Date(res.body.issuedOn),
-        submittedOn: new Date(res.body.submittedOn),
+        submittedOn: null,
       });
 
       // If device's "isIssued" has been set to "true" or not

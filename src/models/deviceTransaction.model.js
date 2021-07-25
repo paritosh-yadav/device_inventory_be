@@ -21,7 +21,7 @@ const deviceTransactionSchema = new mongoose.Schema(
     },
     submittedOn: {
       type: Date,
-      default: Date.now(),
+      default: null,
     },
   },
   {
