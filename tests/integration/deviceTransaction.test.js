@@ -102,5 +102,24 @@ describe('Device transaction route', () => {
         .send(newTransaction)
         .expect(httpStatus.BAD_REQUEST);
     });
+
+    test('should return 400 error if deviceId is already booked', async () => {
+      const deviceRes = await request(app)
+        .post('/v1/devices')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(newDevice)
+        .expect(httpStatus.CREATED);
+      newTransaction.deviceId = new mongoose.Types.ObjectId(deviceRes.body.id);
+      await request(app)
+        .post('/v1/deviceTransactions')
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(newTransaction)
+        .expect(httpStatus.CREATED);
+      await request(app)
+        .post('/v1/deviceTransactions')
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(newTransaction)
+        .expect(httpStatus.BAD_REQUEST);
+    });
   });
 });

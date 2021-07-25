@@ -9,6 +9,9 @@ const ApiError = require('../utils/ApiError');
 
 const createDeviceTransaction = async (deviceTransactionBody) => {
   try {
+    if (deviceTransactionBody.deviceId && (await DeviceTransaction.isDeviceBooked(deviceTransactionBody.deviceId))) {
+      throw new Error('This device already booked.');
+    }
     const deviceTransaction = await DeviceTransaction.create(deviceTransactionBody);
     return deviceTransaction;
   } catch (error) {

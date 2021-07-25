@@ -31,6 +31,16 @@ const deviceTransactionSchema = new mongoose.Schema(
 
 deviceTransactionSchema.plugin(toJSON);
 
+/**
+ * Check if deviceId is already booked
+ * @param {string} deviceId - The device's id
+ * @returns {Promise<boolean>}
+ */
+deviceTransactionSchema.statics.isDeviceBooked = async function (deviceId) {
+  const device = await this.findOne({ deviceId });
+  return !!device;
+};
+
 const DeviceTransaction = mongoose.model('DeviceTransaction', deviceTransactionSchema);
 
 module.exports = DeviceTransaction;
