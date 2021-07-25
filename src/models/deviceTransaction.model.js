@@ -13,7 +13,7 @@ const deviceTransactionSchema = new mongoose.Schema(
     },
     issuedOn: {
       type: Date,
-      required: true,
+      default: Date.now(),
     },
     dueDate: {
       type: Date,
@@ -21,6 +21,7 @@ const deviceTransactionSchema = new mongoose.Schema(
     },
     submittedOn: {
       type: Date,
+      default: Date.now(),
     },
   },
   {
