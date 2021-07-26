@@ -48,6 +48,29 @@ components:
         manufacturer: Apple,
         isIssued: true
 
+    DeviceTransactions:
+      type: object
+      properties:
+        id:
+          type: string
+        deviceId:
+          type: String
+        userId:
+          type: String
+        dueDate:
+          type: String
+        issuedOn:
+          type: String
+        submittedOn:
+          type: String
+      example:
+        id: 5ebac534954b54139806c423
+        deviceId: 5fdcbc30a0e5c50e540016cd,
+        userId: 5fc2790af6a6bbc45afba0d6,
+        dueDate: 2021-06-15T15:06:54.348Z,
+        issuedOn: 2021-06-05T15:16:54.348Z,
+        submittedOn: 2021-15-05T15:05:54.348Z,
+
     Token:
       type: object
       properties:
@@ -131,7 +154,15 @@ components:
           example:
             code: 404
             message: Not found
-
+    DeviceAlreadyBooked:
+      description: Device already booked and in-use
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: This device already booked
   securitySchemes:
     bearerAuth:
       type: http
