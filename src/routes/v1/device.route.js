@@ -28,7 +28,6 @@ module.exports = router;
 
 /**
  * @swagger
- * path:
  *  /devices:
  *    post:
  *      summary: Add a device
@@ -158,7 +157,6 @@ module.exports = router;
 
 /**
  * @swagger
- * path:
  *  /devices/{id}:
  *    get:
  *      summary: Get a device

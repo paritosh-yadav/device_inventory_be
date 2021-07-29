@@ -25,7 +25,6 @@ module.exports = router;
 
 /**
  * @swagger
- * path:
  *  /deviceTransactions:
  *    post:
  *      summary: Book a device
