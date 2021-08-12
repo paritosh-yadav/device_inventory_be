@@ -12,6 +12,7 @@ describe('Device model', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.lorem.word(),
         manufacturer: faker.lorem.word(),
+        picture: faker.image.imageUrl(),
       };
     });
     test('should correctly validate a valid device', async () => {
@@ -39,6 +40,10 @@ describe('Device model', () => {
     });
     test('should throw validation error is manufacturer is not alpha', async () => {
       newDevice.manufacturer = 131;
+      await expect(new Device(newDevice).validate()).rejects.toThrow();
+    });
+    test('should throw validation error is picture is not a valid url', async () => {
+      newDevice.picture = 'not a valid url';
       await expect(new Device(newDevice).validate()).rejects.toThrow();
     });
   });

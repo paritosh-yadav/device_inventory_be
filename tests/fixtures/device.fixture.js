@@ -10,6 +10,7 @@ const mockDeviceOne = {
   variant: faker.random.alphaNumeric(),
   category: faker.random.alpha(),
   manufacturer: faker.random.alpha(),
+  picture: faker.image.imageUrl(),
 };
 
 const mockDeviceTwo = {
@@ -20,6 +21,7 @@ const mockDeviceTwo = {
   variant: faker.random.alphaNumeric(),
   category: faker.random.alpha(),
   manufacturer: faker.random.alpha(),
+  picture: faker.image.imageUrl(),
 };
 
 const insertDevices = async (devices) => {

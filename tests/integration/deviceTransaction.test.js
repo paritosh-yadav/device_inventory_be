@@ -23,6 +23,7 @@ describe('Device transaction route', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
+        picture: faker.image.imageUrl(),
       };
       newTransaction = {
         userId: mongoose.Types.ObjectId(),

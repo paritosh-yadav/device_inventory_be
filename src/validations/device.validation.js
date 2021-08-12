@@ -9,6 +9,7 @@ const addDevice = {
     variant: joi.string().required(),
     category: joi.string().required(),
     manufacturer: joi.string().required(),
+    picture: joi.string().uri(),
     isIssued: joi.boolean(),
   }),
 };
@@ -42,6 +43,7 @@ const updateDevice = {
       variant: joi.string().alphanum(),
       category: joi.string().regex(/^[A-Za-z]+$/),
       manufacturer: joi.string().regex(/^[A-Za-z\s]+$/),
+      picture: joi.string().uri(),
       isIssued: joi.boolean(),
     })
     .min(1),
