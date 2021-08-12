@@ -28,7 +28,6 @@ module.exports = router;
 
 /**
  * @swagger
- * path:
  *  /users:
  *    post:
  *      summary: Create a user
@@ -149,7 +148,6 @@ module.exports = router;
 
 /**
  * @swagger
- * path:
  *  /users/{id}:
  *    get:
  *      summary: Get a user
