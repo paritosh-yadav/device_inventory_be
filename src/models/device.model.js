@@ -67,6 +67,15 @@ const deviceSchema = new mongoose.Schema(
         }
       },
     },
+    picture: {
+      type: String,
+      default: null,
+      validate(value) {
+        if (value && !validator.isURL(value)) {
+          throw new Error('Picture should be a valid url');
+        }
+      },
+    },
     isIssued: {
       type: Boolean,
       default: false,

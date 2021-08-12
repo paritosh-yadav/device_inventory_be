@@ -21,6 +21,7 @@ describe('Device routes', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
+        picture: faker.image.imageUrl(),
       };
       await insertUsers([admin]);
     });
@@ -48,6 +49,7 @@ describe('Device routes', () => {
         variant: newDevice.variant,
         category: newDevice.category,
         manufacturer: newDevice.manufacturer,
+        picture: newDevice.picture,
         isIssued: false,
       });
 
@@ -62,6 +64,7 @@ describe('Device routes', () => {
         variant: newDevice.variant,
         category: newDevice.category,
         manufacturer: newDevice.manufacturer,
+        picture: newDevice.picture,
       });
     });
     test('should return 401 error is access token is missing', async () => {
@@ -116,6 +119,24 @@ describe('Device routes', () => {
         .send(newDevice)
         .expect(httpStatus.BAD_REQUEST);
     });
+    test('should return 400 error if picture is not a valid url', async () => {
+      newDevice.picture = 'not a valid url';
+      await request(app)
+        .post('/v1/devices')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(newDevice)
+        .expect(httpStatus.BAD_REQUEST);
+    });
+    test('should not return 400 error if picture key is missing', async () => {
+      const modifiedDevice = {};
+      Object.assign(modifiedDevice, newDevice);
+      delete modifiedDevice.picture;
+      await request(app)
+        .post('/v1/devices')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send(modifiedDevice)
+        .expect(httpStatus.CREATED);
+    });
   });
 
   describe('GET /v1/devices', () => {
@@ -146,6 +167,7 @@ describe('Device routes', () => {
         variant: mockDeviceOne.variant,
         category: mockDeviceOne.category,
         manufacturer: mockDeviceOne.manufacturer,
+        picture: mockDeviceOne.picture,
         id: mockDeviceOne._id.toHexString(),
       });
     });
@@ -305,6 +327,7 @@ describe('Device routes', () => {
         variant: mockDeviceOne.variant,
         category: mockDeviceOne.category,
         manufacturer: mockDeviceOne.manufacturer,
+        picture: mockDeviceOne.picture,
         id: mockDeviceOne._id.toHexString(),
       });
     });
@@ -387,6 +410,7 @@ describe('Device routes', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
+        picture: faker.image.imageUrl(),
         isIssued: faker.datatype.boolean(),
       };
 
@@ -404,6 +428,7 @@ describe('Device routes', () => {
         variant: updateBody.variant,
         category: updateBody.category,
         manufacturer: updateBody.manufacturer,
+        picture: updateBody.picture,
         isIssued: updateBody.isIssued,
       });
     });
@@ -530,6 +555,16 @@ describe('Device routes', () => {
     test('should return 400 if manufacturer only contains alphabets with/without space', async () => {
       const updateBody = {
         manufacturer: 'Withnumber12',
+      };
+      await request(app)
+        .patch(`/v1/devices/${mockDeviceOne._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.BAD_REQUEST);
+    });
+    test('should return 400 if picture is not a valid url', async () => {
+      const updateBody = {
+        picture: 'notavalidurl',
       };
       await request(app)
         .patch(`/v1/devices/${mockDeviceOne._id}`)

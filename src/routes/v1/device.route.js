@@ -48,6 +48,7 @@ module.exports = router;
  *                - variant
  *                - category
  *                - manufacturer
+ *                - picture
  *              properties:
  *                modalName:
  *                  type: string
@@ -67,6 +68,9 @@ module.exports = router;
  *                manufacturer:
  *                  type: string
  *                  description: must be alphabets only
+ *                picture:
+ *                  type: string
+ *                  description: (Optional) must be a valid url
  *              example:
  *                modalName: iPhone 12
  *                srNo: device_serial_number
@@ -74,6 +78,7 @@ module.exports = router;
  *                variant: 128GB
  *                category: Mobile
  *                manufacturer: Apple
+ *                picture: http://placeimg.com/640/480,
  *      responses:
  *        "201":
  *          description: Created
@@ -223,6 +228,9 @@ module.exports = router;
  *                manufacturer:
  *                  type: string
  *                  description: must be alphabets only
+ *                picture:
+ *                  type: string
+ *                  description: (Optional) must be a vaild url
  *                isIssued:
  *                   type: boolean
  *              example:
@@ -232,6 +240,7 @@ module.exports = router;
  *                variant: 128GB
  *                category: Mobile
  *                manufacturer: Apple
+ *                picture: http://placeimg.com/640/480,
  *                isIssued: true
  *      responses:
  *        "200":
