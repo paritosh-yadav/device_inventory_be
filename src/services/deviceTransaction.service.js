@@ -5,7 +5,7 @@ const ApiError = require('../utils/ApiError');
 /**
  * Add a device
  * @param {Object} deviceBody
- * @returns {Promise<Device>}
+ * @returns {Promise<DeviceTransaction>}
  */
 
 const createDeviceTransaction = async (deviceTransactionBody) => {
@@ -22,6 +22,16 @@ const createDeviceTransaction = async (deviceTransactionBody) => {
   }
 };
 
+/**
+ * Get transaction by deviceId to check booked device & users who haven't submitted them.
+ * @param {ObjectId} id
+ * @returns {Promise<DeviceTransaction>}
+ */
+const getTransactionByDeviceId = async (id) => {
+  return DeviceTransaction.findOne({ deviceId: id, submittedOn: null });
+};
+
 module.exports = {
   createDeviceTransaction,
+  getTransactionByDeviceId,
 };
