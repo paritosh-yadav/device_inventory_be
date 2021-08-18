@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const { deviceService } = require('../services');
+const { deviceService, deviceTransactionService, userService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const pick = require('../utils/pick');
@@ -17,9 +17,15 @@ const getDevices = catchAsync(async (req, res) => {
 });
 
 const getDevice = catchAsync(async (req, res) => {
-  const device = await deviceService.getDeviceById(req.params.deviceId);
+  let device = await deviceService.getDeviceById(req.params.deviceId);
   if (!device) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Device not found');
+  }
+  // Fetching transaction if device is booked already, hence attaching usedId to response
+  if (device.isIssued) {
+    const deviceTransaction = await deviceTransactionService.getTransactionByDeviceId(req.params.deviceId);
+    const user = await userService.getUserById(deviceTransaction.userId);
+    device = { ...device.toJSON(), userId: deviceTransaction.userId, userName: user.name };
   }
   res.send(device);
 });

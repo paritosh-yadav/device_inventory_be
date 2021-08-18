@@ -31,7 +31,7 @@ const getDevices = async (filter, options) => {
 };
 
 /**
- * Get user by id
+ * Get device by id
  * @param {ObjectId} id
  * @returns {Promise<Device>}
  */
