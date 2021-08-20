@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON } = require('./plugins');
+const { toJSON, paginate } = require('./plugins');
 
 const deviceTransactionSchema = new mongoose.Schema(
   {
@@ -30,6 +30,7 @@ const deviceTransactionSchema = new mongoose.Schema(
 );
 
 deviceTransactionSchema.plugin(toJSON);
+deviceTransactionSchema.plugin(paginate);
 
 /**
  * Check if deviceId is already booked
