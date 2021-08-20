@@ -3,7 +3,8 @@ const faker = require('faker');
 const request = require('supertest');
 const httpStatus = require('http-status');
 const setupTestDB = require('../utils/setupTestDB');
-
+const { insertDevices, mockDeviceOne } = require('../fixtures/device.fixture');
+const { mockDeviceTransaction, createDevicesTransaction } = require('../fixtures/deviceTransaction.fixture');
 const { insertUsers, userOne, admin } = require('../fixtures/user.fixture');
 const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
 const app = require('../../src/app');
@@ -121,6 +122,37 @@ describe('Device transaction route', () => {
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send(newTransaction)
         .expect(httpStatus.BAD_REQUEST);
+    });
+  });
+  describe('GET /v1/deviceTransactions', () => {
+    beforeEach(async () => {
+      await insertUsers([admin]);
+      await insertDevices([mockDeviceOne]);
+    });
+    test('should return 200 and apply the default query options', async () => {
+      const deviceTransaction = mockDeviceTransaction(mockDeviceOne._id, admin._id);
+      await createDevicesTransaction([deviceTransaction]);
+      const res = await request(app)
+        .get('/v1/deviceTransactions')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send()
+        .expect(httpStatus.OK);
+
+      expect(res.body).toEqual({
+        results: expect.any(Array),
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        totalResults: 1,
+      });
+      expect(res.body.results).toHaveLength(1);
+      expect(res.body.results[0]).toMatchObject({
+        id: deviceTransaction._id.toHexString(),
+        deviceId: mockDeviceOne._id.toString(),
+        userId: admin._id.toString(),
+        dueDate: new Date(deviceTransaction.dueDate).toISOString(),
+        submittedOn: null,
+      });
     });
   });
 });

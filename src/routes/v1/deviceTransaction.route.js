@@ -12,6 +12,11 @@ router
     auth('manageDeviceTransactions'),
     validate(deviceTransactionValidation.createDeviceTransaction),
     deviceTransactionController.createDeviceTransaction
+  )
+  .get(
+    auth('manageDeviceTransactions'),
+    validate(deviceTransactionValidation.getDeviceTransaction),
+    deviceTransactionController.getDeviceTransactions
   );
 
 module.exports = router;
@@ -65,6 +70,70 @@ module.exports = router;
  *                 $ref: '#/components/schemas/DeviceTransactions'
  *        "400":
  *          $ref: '#/components/responses/DeviceAlreadyBooked'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *    get:
+ *      summary: Get all device transactions
+ *      description: All users can get the device transactions.
+ *      tags: [Device Transactions]
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - in: query
+ *          name: deviceId
+ *          schema:
+ *            type: string
+ *          description: Device identifier
+ *        - in: query
+ *          name: userId
+ *          schema:
+ *            type: string
+ *          description: User identifier
+ *        - in: query
+ *          name: sortBy
+ *          schema:
+ *            type: string
+ *          description: sort by query in the form of field:desc/asc (ex. deviceId:asc)
+ *        - in: query
+ *          name: limit
+ *          schema:
+ *            type: integer
+ *            minimum: 1
+ *          default: 10
+ *          description: Maximum number of transactions
+ *        - in: query
+ *          name: page
+ *          schema:
+ *            type: integer
+ *            minimum: 1
+ *            default: 1
+ *          description: Page number
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  results:
+ *                    type: array
+ *                    items:
+ *                      $ref: '#/components/schemas/DeviceTransactions'
+ *                  page:
+ *                    type: integer
+ *                    example: 1
+ *                  limit:
+ *                    type: integer
+ *                    example: 10
+ *                  totalPages:
+ *                    type: integer
+ *                    example: 1
+ *                  totalResults:
+ *                    type: integer
+ *                    example: 1
  *        "401":
  *          $ref: '#/components/responses/Unauthorized'
  *        "403":

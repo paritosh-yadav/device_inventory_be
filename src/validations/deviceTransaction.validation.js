@@ -9,4 +9,14 @@ const createDeviceTransaction = {
   }),
 };
 
-module.exports = { createDeviceTransaction };
+const getDeviceTransaction = {
+  query: joi.object().keys({
+    deviceId: joi.string().custom(objectId),
+    userId: joi.string().custom(objectId),
+    sortBy: joi.string(),
+    limit: joi.number().integer(),
+    page: joi.number().integer(),
+  }),
+};
+
+module.exports = { createDeviceTransaction, getDeviceTransaction };
