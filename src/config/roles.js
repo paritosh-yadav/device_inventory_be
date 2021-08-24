@@ -10,6 +10,7 @@ roleRights.set(roles[1], [
   'getDevices',
   'updateDevice',
   'manageDeviceTransactions',
+  'deleteDeviceTransactions',
 ]);
 
 module.exports = {

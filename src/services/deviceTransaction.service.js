@@ -23,6 +23,15 @@ const createDeviceTransaction = async (deviceTransactionBody) => {
 };
 
 /**
+ * Get transaction by id
+ * @param {ObjectId} id
+ * @returns {Promise<Device>}
+ */
+const getTransactionById = async (id) => {
+  return DeviceTransaction.findById(id);
+};
+
+/**
  * Get transaction by deviceId to check booked device & users who haven't submitted them.
  * @param {ObjectId} id
  * @returns {Promise<DeviceTransaction>}
@@ -45,8 +54,27 @@ const getDeviceTransactions = async (filter, options) => {
   return deviceTranasctions;
 };
 
+/**
+ * Delete deviceTransaction by id
+ * @param {ObjectId} transactionId
+ * @returns {Promise<Device>}
+ */
+const deleteDeviceTransactionById = async (transactionId) => {
+  const transaction = await getTransactionById(transactionId);
+  if (!transaction) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Transaction not found');
+  }
+  if (!transaction.submittedOn) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Device hasn't submitted yet");
+  }
+  await transaction.remove();
+  return transaction;
+};
+
 module.exports = {
   createDeviceTransaction,
   getDeviceTransactions,
+  getTransactionById,
   getTransactionByDeviceId,
+  deleteDeviceTransactionById,
 };
