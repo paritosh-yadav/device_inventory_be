@@ -26,6 +26,11 @@ router
     validate(deviceTransactionValidation.getDeviceTransaction),
     deviceTransactionController.getDeviceTransaction
   )
+  .patch(
+    auth('manageDeviceTransactions'),
+    validate(deviceTransactionValidation.updateDeviceTransaction),
+    deviceTransactionController.updateDeviceTransaction
+  )
   .delete(
     auth('deleteDeviceTransactions'),
     validate(deviceTransactionValidation.deleteDeviceTransaction),

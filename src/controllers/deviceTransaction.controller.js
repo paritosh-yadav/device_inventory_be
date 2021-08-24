@@ -25,6 +25,11 @@ const getDeviceTransaction = catchAsync(async (req, res) => {
   res.send(deviceTransaction);
 });
 
+const updateDeviceTransaction = catchAsync(async (req, res) => {
+  const deviceTransaction = await deviceTransactionService.updateDeviceTransactionById(req.params.transactionId, req.body);
+  res.send(deviceTransaction);
+});
+
 const deleteDeviceTransaction = catchAsync(async (req, res) => {
   await deviceTransactionService.deleteDeviceTransactionById(req.params.transactionId);
   res.status(httpStatus.NO_CONTENT).send();
@@ -34,5 +39,6 @@ module.exports = {
   createDeviceTransaction,
   getDeviceTransactions,
   getDeviceTransaction,
+  updateDeviceTransaction,
   deleteDeviceTransaction,
 };

@@ -55,6 +55,26 @@ const getDeviceTransactions = async (filter, options) => {
 };
 
 /**
+ * Update deviceTransaction by id
+ * @param {ObjectId} transactionId
+ * @param {Object} updateBody
+ * @returns {Promise<Device>}
+ */
+
+const updateDeviceTransactionById = async (transactionId, updateBody) => {
+  const transaction = await getTransactionById(transactionId);
+  if (!transaction) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Transaction not found');
+  }
+  if (updateBody.dueDate <= transaction.dueDate) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Due date can't be same for back date");
+  }
+  Object.assign(transaction, updateBody);
+  await transaction.save();
+  return transaction;
+};
+
+/**
  * Delete deviceTransaction by id
  * @param {ObjectId} transactionId
  * @returns {Promise<Device>}
@@ -76,5 +96,6 @@ module.exports = {
   getDeviceTransactions,
   getTransactionById,
   getTransactionByDeviceId,
+  updateDeviceTransactionById,
   deleteDeviceTransactionById,
 };

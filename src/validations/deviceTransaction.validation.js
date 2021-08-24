@@ -25,10 +25,28 @@ const getDeviceTransaction = {
   }),
 };
 
+const updateDeviceTransaction = {
+  params: joi.object().keys({
+    transactionId: joi.string().custom(objectId),
+  }),
+  body: joi
+    .object()
+    .keys({
+      dueDate: joi.date().iso(),
+    })
+    .min(1),
+};
+
 const deleteDeviceTransaction = {
   params: joi.object().keys({
     transactionId: joi.string().custom(objectId),
   }),
 };
 
-module.exports = { createDeviceTransaction, getDeviceTransactions, getDeviceTransaction, deleteDeviceTransaction };
+module.exports = {
+  createDeviceTransaction,
+  getDeviceTransactions,
+  getDeviceTransaction,
+  deleteDeviceTransaction,
+  updateDeviceTransaction,
+};
