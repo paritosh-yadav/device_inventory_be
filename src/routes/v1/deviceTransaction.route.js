@@ -15,10 +15,22 @@ router
   )
   .get(
     auth('manageDeviceTransactions'),
-    validate(deviceTransactionValidation.getDeviceTransaction),
+    validate(deviceTransactionValidation.getDeviceTransactions),
     deviceTransactionController.getDeviceTransactions
   );
 
+router
+  .route('/:transactionId')
+  .get(
+    auth('manageDeviceTransactions'),
+    validate(deviceTransactionValidation.getDeviceTransaction),
+    deviceTransactionController.getDeviceTransaction
+  )
+  .delete(
+    auth('deleteDeviceTransactions'),
+    validate(deviceTransactionValidation.deleteDeviceTransaction),
+    deviceTransactionController.deleteDeviceTransaction
+  );
 module.exports = router;
 
 /**

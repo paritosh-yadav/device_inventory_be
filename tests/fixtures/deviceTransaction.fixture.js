@@ -16,4 +16,9 @@ const createDevicesTransaction = async (transactions) => {
   Object.assign(device, { isIssued: true });
   await device.save();
 };
-module.exports = { mockDeviceTransaction, createDevicesTransaction };
+
+const deleteDeviceTransaction = async (transactionId) => {
+  await DeviceTransaction.findByIdAndDelete(transactionId);
+};
+
+module.exports = { mockDeviceTransaction, createDevicesTransaction, deleteDeviceTransaction };

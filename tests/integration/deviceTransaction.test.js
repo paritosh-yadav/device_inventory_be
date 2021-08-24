@@ -4,7 +4,11 @@ const request = require('supertest');
 const httpStatus = require('http-status');
 const setupTestDB = require('../utils/setupTestDB');
 const { insertDevices, mockDeviceOne, mockDeviceTwo } = require('../fixtures/device.fixture');
-const { mockDeviceTransaction, createDevicesTransaction } = require('../fixtures/deviceTransaction.fixture');
+const {
+  mockDeviceTransaction,
+  createDevicesTransaction,
+  deleteDeviceTransaction,
+} = require('../fixtures/deviceTransaction.fixture');
 const { insertUsers, userOne, admin } = require('../fixtures/user.fixture');
 const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
 const app = require('../../src/app');
@@ -303,6 +307,110 @@ describe('Device transaction route', () => {
 
       expect(res.body.results).toHaveLength(1);
       expect(res.body.results[0].id).toBe(mockTransactionTwo._id.toHexString());
+    });
+  });
+
+  describe('GET /v1/deviceTransactions/:transactionId', () => {
+    let deviceTransaction;
+    beforeEach(async () => {
+      await insertUsers([userOne]);
+      await insertDevices([mockDeviceOne]);
+      deviceTransaction = mockDeviceTransaction(mockDeviceOne._id, userOne._id);
+      await createDevicesTransaction([deviceTransaction]);
+    });
+    test('should return 200 and the transaction object if data is ok', async () => {
+      const res = await request(app)
+        .get(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send()
+        .expect(httpStatus.OK);
+      expect(res.body).toMatchObject({
+        submittedOn: null,
+        deviceId: deviceTransaction.deviceId.toHexString(),
+        userId: deviceTransaction.userId.toHexString(),
+        dueDate: deviceTransaction.dueDate.toISOString(),
+        id: deviceTransaction._id.toHexString(),
+      });
+    });
+    test('should return 401 error if access token is missing', async () => {
+      await request(app).get(`/v1/deviceTransactions/${deviceTransaction._id}`).send().expect(httpStatus.UNAUTHORIZED);
+    });
+    test('should return 400 error if transactionId is not a valid mongo id', async () => {
+      await request(app)
+        .get(`/v1/deviceTransactions/invaliddeviceid`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send()
+        .expect(httpStatus.BAD_REQUEST);
+    });
+    test('should return 404 error if transaction is not found', async () => {
+      await insertDevices([mockDeviceTwo]);
+      const deviceTransactionTwo = mockDeviceTransaction(mockDeviceTwo._id, userOne._id);
+      await request(app)
+        .get(`/v1/deviceTransactions/${deviceTransactionTwo._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send()
+        .expect(httpStatus.NOT_FOUND);
+    });
+  });
+
+  describe('Delete /v1/deviceTransactions/:transactionId', () => {
+    let deviceTransaction;
+    beforeEach(async () => {
+      await insertUsers([admin]);
+      await insertDevices([mockDeviceOne]);
+      deviceTransaction = mockDeviceTransaction(mockDeviceOne._id, admin._id);
+      deviceTransaction.submittedOn = faker.datatype.datetime();
+      await createDevicesTransaction([deviceTransaction]);
+    });
+    test('should return 403 error if logged in user is not admin', async () => {
+      await insertUsers([userOne]);
+      await request(app)
+        .delete(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send()
+        .expect(httpStatus.FORBIDDEN);
+    });
+    test('should return 204 if device is submitted', async () => {
+      await request(app)
+        .delete(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send()
+        .expect(httpStatus.NO_CONTENT);
+      const dbDeviceTransactions = await DeviceTransaction.findById(deviceTransaction._id);
+      expect(dbDeviceTransactions).toBeNull();
+    });
+
+    test('should return 400 if transaction is not closed', async () => {
+      await insertDevices([mockDeviceTwo]);
+      const deviceTransactionTwo = mockDeviceTransaction(mockDeviceTwo._id, admin._id);
+      deviceTransactionTwo.submittedOn = null;
+      await createDevicesTransaction([deviceTransactionTwo]);
+      await request(app)
+        .delete(`/v1/deviceTransactions/${deviceTransactionTwo._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send()
+        .expect(httpStatus.BAD_REQUEST);
+    });
+
+    test('should return 401 error if access token is missing', async () => {
+      await request(app).delete(`/v1/deviceTransactions/${deviceTransaction._id}`).send().expect(httpStatus.UNAUTHORIZED);
+    });
+
+    test('should return 400 error if deviceId is not a valid mongo id', async () => {
+      await request(app)
+        .delete('/v1/deviceTransactions/invalidId')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send()
+        .expect(httpStatus.BAD_REQUEST);
+    });
+
+    test('should return 404 error if transaction not found', async () => {
+      await deleteDeviceTransaction(deviceTransaction._id);
+      await request(app)
+        .delete(`/v1/devices/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .send()
+        .expect(httpStatus.NOT_FOUND);
     });
   });
 });
