@@ -23,6 +23,16 @@ const deviceTransactionSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    status: {
+      type: String,
+      validate(value) {
+        if (value !== 'Open' && value !== 'Closed') {
+          throw new Error("Status can't be other than 'Open' or 'Closed'");
+        }
+      },
+      enum: ['Open', 'Closed'],
+      default: 'Open',
+    },
   },
   {
     timestamps: true,

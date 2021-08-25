@@ -69,6 +69,9 @@ const updateDeviceTransactionById = async (transactionId, updateBody) => {
   if (updateBody.dueDate <= transaction.dueDate) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Due date can't be same or back date");
   }
+  if (updateBody.dueDate && updateBody.status) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Status modification not allowed with Duedate');
+  }
   Object.assign(transaction, updateBody);
   await transaction.save();
   return transaction;
@@ -84,7 +87,7 @@ const deleteDeviceTransactionById = async (transactionId) => {
   if (!transaction) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Transaction not found');
   }
-  if (!transaction.submittedOn) {
+  if (transaction.status !== 'Closed') {
     throw new ApiError(httpStatus.BAD_REQUEST, "Device hasn't submitted yet");
   }
   await transaction.remove();

@@ -26,7 +26,17 @@ const getDeviceTransaction = catchAsync(async (req, res) => {
 });
 
 const updateDeviceTransaction = catchAsync(async (req, res) => {
-  const deviceTransaction = await deviceTransactionService.updateDeviceTransactionById(req.params.transactionId, req.body);
+  let deviceTransaction;
+  if (req.body.status === 'Closed') {
+    deviceTransaction = await deviceTransactionService.updateDeviceTransactionById(req.params.transactionId, {
+      ...req.body,
+      submittedOn: Date.now(),
+    });
+    const device = await deviceTransactionService.getTransactionById(req.params.transactionId);
+    await deviceService.updateDeviceById(device.deviceId, { isIssued: false });
+  } else {
+    deviceTransaction = await deviceTransactionService.updateDeviceTransactionById(req.params.transactionId, req.body);
+  }
   res.send(deviceTransaction);
 });
 

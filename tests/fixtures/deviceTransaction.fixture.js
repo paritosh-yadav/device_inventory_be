@@ -8,6 +8,7 @@ const mockDeviceTransaction = (deviceId, userId) => ({
   deviceId,
   userId,
   dueDate: faker.datatype.datetime(),
+  status: 'Open',
 });
 
 const createDevicesTransaction = async (transactions) => {

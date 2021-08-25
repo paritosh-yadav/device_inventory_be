@@ -33,6 +33,7 @@ const updateDeviceTransaction = {
     .object()
     .keys({
       dueDate: joi.date().iso(),
+      status: joi.any().valid('Open', 'Closed'),
     })
     .min(1),
 };
