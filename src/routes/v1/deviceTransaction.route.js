@@ -156,3 +156,98 @@ module.exports = router;
  *        "403":
  *          $ref: '#/components/responses/Forbidden'
  */
+
+/**
+ * @swagger
+ *  /deviceTransactions/{id}:
+ *    get:
+ *      summary: Get a transaction
+ *      description: Transaction details will be provided based on unique id.
+ *      tags: [Device Transactions]
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - in: path
+ *          name: id
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: transaction id
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/DeviceTransactions'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *        "404":
+ *          $ref: '#/components/responses/NotFound'
+ *
+ *    patch:
+ *      summary: Update a transaction
+ *      description: Transaction details will be updated.
+ *      tags: [Device Transactions]
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - in: path
+ *          name: id
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: transaction id
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                dueDate:
+ *                  type: string
+ *                  description: must be valid date
+ *              example:
+ *                dueDate: 2021-06-16T15:16:56.348Z
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/DeviceTransactions'
+ *        "400":
+ *          $ref: '#/components/responses/FutureDuedateOnly'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *        "404":
+ *          $ref: '#/components/responses/NotFound'
+ *
+ *    delete:
+ *      summary: Delete a transaction
+ *      description: Transaction will be deleted.
+ *      tags: [Device Transactions]
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - in: path
+ *          name: id
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: Transaction id
+ *      responses:
+ *        "200":
+ *          description: No content
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *        "404":
+ *          $ref: '#/components/responses/NotFound'
+ */

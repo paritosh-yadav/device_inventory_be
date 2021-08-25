@@ -166,6 +166,15 @@ components:
           example:
             code: 400
             message: This device already booked
+    FutureDuedateOnly:
+      description: Duedate should be future date
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: Due date can't be same or back date
   securitySchemes:
     bearerAuth:
       type: http

@@ -67,7 +67,7 @@ const updateDeviceTransactionById = async (transactionId, updateBody) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Transaction not found');
   }
   if (updateBody.dueDate <= transaction.dueDate) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Due date can't be same for back date");
+    throw new ApiError(httpStatus.BAD_REQUEST, "Due date can't be same or back date");
   }
   Object.assign(transaction, updateBody);
   await transaction.save();
