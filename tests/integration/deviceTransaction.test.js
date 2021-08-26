@@ -13,6 +13,7 @@ const { insertUsers, userOne, admin } = require('../fixtures/user.fixture');
 const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
 const app = require('../../src/app');
 const { Device, DeviceTransaction } = require('../../src/models');
+const { status } = require('../../src/config/transaction');
 
 setupTestDB();
 
@@ -57,7 +58,7 @@ describe('Device transaction route', () => {
         userId: newTransaction.userId.toString(),
         issuedOn: expect.anything(),
         dueDate: new Date(newTransaction.dueDate).toISOString(),
-        status: 'Open',
+        status: status.OPEN,
         submittedOn: null,
       });
 
@@ -168,7 +169,7 @@ describe('Device transaction route', () => {
         userId: admin._id.toString(),
         dueDate: new Date(deviceTransaction.dueDate).toISOString(),
         submittedOn: null,
-        status: 'Open',
+        status: status.OPEN,
       });
     });
     test('should return 401 if access token is missing', async () => {
@@ -339,7 +340,7 @@ describe('Device transaction route', () => {
         .expect(httpStatus.OK);
       expect(res.body).toMatchObject({
         submittedOn: null,
-        status: 'Open',
+        status: status.OPEN,
         deviceId: deviceTransaction.deviceId.toHexString(),
         userId: deviceTransaction.userId.toHexString(),
         dueDate: deviceTransaction.dueDate.toISOString(),
@@ -373,7 +374,7 @@ describe('Device transaction route', () => {
       await insertUsers([admin]);
       await insertDevices([mockDeviceOne]);
       deviceTransaction = mockDeviceTransaction(mockDeviceOne._id, admin._id);
-      deviceTransaction.status = 'Closed';
+      deviceTransaction.status = status.CLOSED;
       await createDevicesTransaction([deviceTransaction]);
     });
     test('should return 403 error if logged in user is not admin', async () => {
@@ -397,7 +398,7 @@ describe('Device transaction route', () => {
     test('should return 400 if transaction is not closed', async () => {
       await insertDevices([mockDeviceTwo]);
       const deviceTransactionTwo = mockDeviceTransaction(mockDeviceTwo._id, admin._id);
-      deviceTransactionTwo.status = 'Open';
+      deviceTransactionTwo.status = status.OPEN;
       await createDevicesTransaction([deviceTransactionTwo]);
       await request(app)
         .delete(`/v1/deviceTransactions/${deviceTransactionTwo._id}`)
@@ -456,7 +457,7 @@ describe('Device transaction route', () => {
     });
     test('should return 200 and close the transaction & set isIssued to "false" if "status" is "closed"', async () => {
       const updateBody = {
-        status: 'Closed',
+        status: status.CLOSED,
       };
       const res = await request(app)
         .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
@@ -540,7 +541,7 @@ describe('Device transaction route', () => {
       futureDate.setSeconds(deviceTransaction.dueDate.getSeconds() + 1);
       const updateBody = {
         dueDate: futureDate,
-        status: 'Closed',
+        status: status.CLOSED,
       };
       await request(app)
         .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
@@ -548,7 +549,7 @@ describe('Device transaction route', () => {
         .send(updateBody)
         .expect(httpStatus.BAD_REQUEST);
     });
-    test('Should return 400 error if status is otherthan "Open" or "Closed"', async () => {
+    test(`Should return 400 error if status is otherthan '${status.OPEN}' or '${status.CLOSED}'`, async () => {
       const updateBody = {
         status: 'invalidStatus',
       };

@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const { DeviceTransaction } = require('../models');
 const { getDeviceById } = require('./device.service');
 const ApiError = require('../utils/ApiError');
+const { status } = require('../config/transaction');
 /**
  * Add a device
  * @param {Object} deviceBody
@@ -90,7 +91,7 @@ const deleteDeviceTransactionById = async (transactionId) => {
   if (!transaction) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Transaction not found');
   }
-  if (transaction.status !== 'Closed') {
+  if (transaction.status !== status.CLOSED) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Device hasn't submitted yet");
   }
   await transaction.remove();

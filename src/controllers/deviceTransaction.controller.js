@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const pick = require('../utils/pick');
+const { status } = require('../config/transaction');
 const { deviceTransactionService, deviceService } = require('../services');
 
 const createDeviceTransaction = catchAsync(async (req, res) => {
@@ -27,7 +28,7 @@ const getDeviceTransaction = catchAsync(async (req, res) => {
 
 const updateDeviceTransaction = catchAsync(async (req, res) => {
   let deviceTransaction;
-  if (req.body.status === 'Closed') {
+  if (req.body.status === status.CLOSED) {
     deviceTransaction = await deviceTransactionService.updateDeviceTransactionById(req.params.transactionId, {
       ...req.body,
       submittedOn: Date.now(),

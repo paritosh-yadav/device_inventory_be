@@ -1,5 +1,6 @@
 const joi = require('joi');
 const { objectId } = require('./custom.validation');
+const { status } = require('../config/transaction');
 
 const createDeviceTransaction = {
   body: joi.object().keys({
@@ -33,7 +34,7 @@ const updateDeviceTransaction = {
     .object()
     .keys({
       dueDate: joi.date().iso(),
-      status: joi.any().valid('Open', 'Closed'),
+      status: joi.any().valid(status.OPEN, status.CLOSED),
     })
     .min(1),
 };
