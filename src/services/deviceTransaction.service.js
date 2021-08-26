@@ -15,6 +15,9 @@ const createDeviceTransaction = async (deviceTransactionBody) => {
       if (deviceTransactionBody.deviceId && (await DeviceTransaction.isDeviceBooked(deviceTransactionBody.deviceId))) {
         throw new Error('This device already booked.');
       }
+    if (deviceTransactionBody.dueDate <= new Date()) {
+      throw new Error("Due date can't be same or back date.");
+    }
     const deviceTransaction = await DeviceTransaction.create(deviceTransactionBody);
     return deviceTransaction;
   } catch (error) {

@@ -32,7 +32,7 @@ describe('Device transaction route', () => {
       };
       newTransaction = {
         userId: mongoose.Types.ObjectId(),
-        dueDate: faker.datatype.datetime(),
+        dueDate: faker.date.future(),
       };
 
       await insertUsers([userOne]);
@@ -103,6 +103,16 @@ describe('Device transaction route', () => {
 
     test('should return 400 error if dueDate is not a valid Date', async () => {
       newTransaction.dueDate = 'invalidDate';
+      await request(app)
+        .post('/v1/deviceTransactions')
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(newTransaction)
+        .expect(httpStatus.BAD_REQUEST);
+    });
+    test('should return 400 error if dueDate is of same/back_date', async () => {
+      await insertDevices([mockDeviceOne]);
+      newTransaction.deviceId = mockDeviceOne._id;
+      newTransaction.dueDate = faker.date.past();
       await request(app)
         .post('/v1/deviceTransactions')
         .set('Authorization', `Bearer ${userOneAccessToken}`)
