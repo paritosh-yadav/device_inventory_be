@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const pick = require('../utils/pick');
+const { status } = require('../config/transaction');
 const { deviceTransactionService, deviceService } = require('../services');
 
 const createDeviceTransaction = catchAsync(async (req, res) => {
@@ -25,6 +26,21 @@ const getDeviceTransaction = catchAsync(async (req, res) => {
   res.send(deviceTransaction);
 });
 
+const updateDeviceTransaction = catchAsync(async (req, res) => {
+  let deviceTransaction;
+  if (req.body.status === status.CLOSED) {
+    deviceTransaction = await deviceTransactionService.updateDeviceTransactionById(req.params.transactionId, {
+      ...req.body,
+      submittedOn: Date.now(),
+    });
+    const device = await deviceTransactionService.getTransactionById(req.params.transactionId);
+    await deviceService.updateDeviceById(device.deviceId, { isIssued: false });
+  } else {
+    deviceTransaction = await deviceTransactionService.updateDeviceTransactionById(req.params.transactionId, req.body);
+  }
+  res.send(deviceTransaction);
+});
+
 const deleteDeviceTransaction = catchAsync(async (req, res) => {
   await deviceTransactionService.deleteDeviceTransactionById(req.params.transactionId);
   res.status(httpStatus.NO_CONTENT).send();
@@ -34,5 +50,6 @@ module.exports = {
   createDeviceTransaction,
   getDeviceTransactions,
   getDeviceTransaction,
+  updateDeviceTransaction,
   deleteDeviceTransaction,
 };

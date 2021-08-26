@@ -1,5 +1,6 @@
 const joi = require('joi');
 const { objectId } = require('./custom.validation');
+const { status } = require('../config/transaction');
 
 const createDeviceTransaction = {
   body: joi.object().keys({
@@ -25,10 +26,29 @@ const getDeviceTransaction = {
   }),
 };
 
+const updateDeviceTransaction = {
+  params: joi.object().keys({
+    transactionId: joi.string().custom(objectId),
+  }),
+  body: joi
+    .object()
+    .keys({
+      dueDate: joi.date().iso(),
+      status: joi.any().valid(status.OPEN, status.CLOSED),
+    })
+    .min(1),
+};
+
 const deleteDeviceTransaction = {
   params: joi.object().keys({
     transactionId: joi.string().custom(objectId),
   }),
 };
 
-module.exports = { createDeviceTransaction, getDeviceTransactions, getDeviceTransaction, deleteDeviceTransaction };
+module.exports = {
+  createDeviceTransaction,
+  getDeviceTransactions,
+  getDeviceTransaction,
+  deleteDeviceTransaction,
+  updateDeviceTransaction,
+};

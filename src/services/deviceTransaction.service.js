@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const { DeviceTransaction } = require('../models');
 const { getDeviceById } = require('./device.service');
 const ApiError = require('../utils/ApiError');
+const { status } = require('../config/transaction');
 /**
  * Add a device
  * @param {Object} deviceBody
@@ -15,6 +16,9 @@ const createDeviceTransaction = async (deviceTransactionBody) => {
       if (deviceTransactionBody.deviceId && (await DeviceTransaction.isDeviceBooked(deviceTransactionBody.deviceId))) {
         throw new Error('This device already booked.');
       }
+    if (deviceTransactionBody.dueDate <= new Date()) {
+      throw new Error("Due date can't be same or back date.");
+    }
     const deviceTransaction = await DeviceTransaction.create(deviceTransactionBody);
     return deviceTransaction;
   } catch (error) {
@@ -55,6 +59,29 @@ const getDeviceTransactions = async (filter, options) => {
 };
 
 /**
+ * Update deviceTransaction by id
+ * @param {ObjectId} transactionId
+ * @param {Object} updateBody
+ * @returns {Promise<Device>}
+ */
+
+const updateDeviceTransactionById = async (transactionId, updateBody) => {
+  const transaction = await getTransactionById(transactionId);
+  if (!transaction) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Transaction not found');
+  }
+  if (updateBody.dueDate <= transaction.dueDate) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Due date can't be same or back date");
+  }
+  if (updateBody.dueDate && updateBody.status) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Status modification not allowed with Duedate');
+  }
+  Object.assign(transaction, updateBody);
+  await transaction.save();
+  return transaction;
+};
+
+/**
  * Delete deviceTransaction by id
  * @param {ObjectId} transactionId
  * @returns {Promise<Device>}
@@ -64,7 +91,7 @@ const deleteDeviceTransactionById = async (transactionId) => {
   if (!transaction) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Transaction not found');
   }
-  if (!transaction.submittedOn) {
+  if (transaction.status !== status.CLOSED) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Device hasn't submitted yet");
   }
   await transaction.remove();
@@ -76,5 +103,6 @@ module.exports = {
   getDeviceTransactions,
   getTransactionById,
   getTransactionByDeviceId,
+  updateDeviceTransactionById,
   deleteDeviceTransactionById,
 };

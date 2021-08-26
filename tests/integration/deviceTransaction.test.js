@@ -13,6 +13,7 @@ const { insertUsers, userOne, admin } = require('../fixtures/user.fixture');
 const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
 const app = require('../../src/app');
 const { Device, DeviceTransaction } = require('../../src/models');
+const { status } = require('../../src/config/transaction');
 
 setupTestDB();
 
@@ -32,7 +33,7 @@ describe('Device transaction route', () => {
       };
       newTransaction = {
         userId: mongoose.Types.ObjectId(),
-        dueDate: faker.datatype.datetime(),
+        dueDate: faker.date.future(),
       };
 
       await insertUsers([userOne]);
@@ -57,6 +58,7 @@ describe('Device transaction route', () => {
         userId: newTransaction.userId.toString(),
         issuedOn: expect.anything(),
         dueDate: new Date(newTransaction.dueDate).toISOString(),
+        status: status.OPEN,
         submittedOn: null,
       });
 
@@ -82,7 +84,7 @@ describe('Device transaction route', () => {
       await request(app).post('/v1/deviceTransactions').send(newTransaction).expect(httpStatus.UNAUTHORIZED);
     });
 
-    test('should return 400 error if deviceId is not a valid mongoose objectId', async () => {
+    test('should return 400 error if transactionId is not a valid mongoose objectId', async () => {
       newTransaction.deviceId = 'invalidId';
       await request(app)
         .post('/v1/deviceTransactions')
@@ -102,6 +104,16 @@ describe('Device transaction route', () => {
 
     test('should return 400 error if dueDate is not a valid Date', async () => {
       newTransaction.dueDate = 'invalidDate';
+      await request(app)
+        .post('/v1/deviceTransactions')
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(newTransaction)
+        .expect(httpStatus.BAD_REQUEST);
+    });
+    test('should return 400 error if dueDate is of same/back_date', async () => {
+      await insertDevices([mockDeviceOne]);
+      newTransaction.deviceId = mockDeviceOne._id;
+      newTransaction.dueDate = faker.date.past();
       await request(app)
         .post('/v1/deviceTransactions')
         .set('Authorization', `Bearer ${userOneAccessToken}`)
@@ -128,6 +140,7 @@ describe('Device transaction route', () => {
         .expect(httpStatus.BAD_REQUEST);
     });
   });
+
   describe('GET /v1/deviceTransactions', () => {
     beforeEach(async () => {
       await insertUsers([admin]);
@@ -156,6 +169,7 @@ describe('Device transaction route', () => {
         userId: admin._id.toString(),
         dueDate: new Date(deviceTransaction.dueDate).toISOString(),
         submittedOn: null,
+        status: status.OPEN,
       });
     });
     test('should return 401 if access token is missing', async () => {
@@ -326,6 +340,7 @@ describe('Device transaction route', () => {
         .expect(httpStatus.OK);
       expect(res.body).toMatchObject({
         submittedOn: null,
+        status: status.OPEN,
         deviceId: deviceTransaction.deviceId.toHexString(),
         userId: deviceTransaction.userId.toHexString(),
         dueDate: deviceTransaction.dueDate.toISOString(),
@@ -359,7 +374,7 @@ describe('Device transaction route', () => {
       await insertUsers([admin]);
       await insertDevices([mockDeviceOne]);
       deviceTransaction = mockDeviceTransaction(mockDeviceOne._id, admin._id);
-      deviceTransaction.submittedOn = faker.datatype.datetime();
+      deviceTransaction.status = status.CLOSED;
       await createDevicesTransaction([deviceTransaction]);
     });
     test('should return 403 error if logged in user is not admin', async () => {
@@ -370,7 +385,7 @@ describe('Device transaction route', () => {
         .send()
         .expect(httpStatus.FORBIDDEN);
     });
-    test('should return 204 if device is submitted', async () => {
+    test('should return 204 if transaction is closed', async () => {
       await request(app)
         .delete(`/v1/deviceTransactions/${deviceTransaction._id}`)
         .set('Authorization', `Bearer ${adminAccessToken}`)
@@ -383,7 +398,7 @@ describe('Device transaction route', () => {
     test('should return 400 if transaction is not closed', async () => {
       await insertDevices([mockDeviceTwo]);
       const deviceTransactionTwo = mockDeviceTransaction(mockDeviceTwo._id, admin._id);
-      deviceTransactionTwo.submittedOn = null;
+      deviceTransactionTwo.status = status.OPEN;
       await createDevicesTransaction([deviceTransactionTwo]);
       await request(app)
         .delete(`/v1/deviceTransactions/${deviceTransactionTwo._id}`)
@@ -396,7 +411,7 @@ describe('Device transaction route', () => {
       await request(app).delete(`/v1/deviceTransactions/${deviceTransaction._id}`).send().expect(httpStatus.UNAUTHORIZED);
     });
 
-    test('should return 400 error if deviceId is not a valid mongo id', async () => {
+    test('should return 400 error if transactionId is not a valid mongo id', async () => {
       await request(app)
         .delete('/v1/deviceTransactions/invalidId')
         .set('Authorization', `Bearer ${adminAccessToken}`)
@@ -411,6 +426,138 @@ describe('Device transaction route', () => {
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .send()
         .expect(httpStatus.NOT_FOUND);
+    });
+  });
+
+  describe('Patch /v1/deviceTransactions/:transactionId', () => {
+    let deviceTransaction;
+    beforeEach(async () => {
+      await insertUsers([userOne]);
+      await insertDevices([mockDeviceOne]);
+      deviceTransaction = mockDeviceTransaction(mockDeviceOne._id, userOne._id);
+      await createDevicesTransaction([deviceTransaction]);
+    });
+
+    test('should return 200 and successfully update transaction if data is ok', async () => {
+      const futureDate = new Date(deviceTransaction.dueDate);
+      futureDate.setSeconds(deviceTransaction.dueDate.getSeconds() + 1);
+      const updateBody = {
+        dueDate: futureDate,
+      };
+      const res = await request(app)
+        .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.OK);
+
+      expect(res.body).toMatchObject({
+        id: deviceTransaction._id.toHexString(),
+        dueDate: updateBody.dueDate.toISOString(),
+      });
+    });
+    test('should return 200 and close the transaction & set isIssued to "false" if "status" is "closed"', async () => {
+      const updateBody = {
+        status: status.CLOSED,
+      };
+      const res = await request(app)
+        .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.OK);
+
+      expect(res.body).toMatchObject({
+        id: deviceTransaction._id.toHexString(),
+        status: updateBody.status,
+      });
+
+      expect(res.body.submittedOn).not.toBeNull();
+
+      // If device's "isIssued" has been set to "false" or not
+      const dbDevice = await Device.findById(deviceTransaction.deviceId);
+      expect(dbDevice).toBeDefined();
+      expect(dbDevice.isIssued).toBe(false);
+    });
+
+    test('should return 401 error if access token is missing', async () => {
+      const updateBody = {
+        dueDate: faker.datatype.datetime(),
+      };
+      await request(app)
+        .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .send(updateBody)
+        .expect(httpStatus.UNAUTHORIZED);
+    });
+
+    test('should return 404 if user is updating a transaction that is not found', async () => {
+      await insertDevices([mockDeviceTwo]);
+      const deviceTransactionTwo = mockDeviceTransaction(mockDeviceTwo._id, userOne._id);
+      const updateBody = {
+        dueDate: faker.datatype.datetime(),
+      };
+
+      await request(app)
+        .patch(`/v1/deviceTransactions/${deviceTransactionTwo._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.NOT_FOUND);
+    });
+
+    test('should return 400 error if transactionId is not a valid mongo id', async () => {
+      const updateBody = {
+        dueDate: faker.datatype.datetime(),
+      };
+
+      await request(app)
+        .patch(`/v1/deviceTransactions/invalidId`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.BAD_REQUEST);
+    });
+
+    test('Should return 400 error if dueDate is not a valid date', async () => {
+      const updateBody = {
+        dueDate: 'invalidDate',
+      };
+      await request(app)
+        .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.BAD_REQUEST);
+    });
+    test('Should return 400 error if updated dueDate is of same/back_date from created dueDate', async () => {
+      const futureDate = new Date(deviceTransaction.dueDate);
+      futureDate.setSeconds(deviceTransaction.dueDate.getSeconds() - 1);
+      const updateBody = {
+        dueDate: futureDate,
+      };
+      await request(app)
+        .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.BAD_REQUEST);
+    });
+    test('Should return 400 error for both dueDate & status updates simultaneously', async () => {
+      const futureDate = new Date(deviceTransaction.dueDate);
+      futureDate.setSeconds(deviceTransaction.dueDate.getSeconds() + 1);
+      const updateBody = {
+        dueDate: futureDate,
+        status: status.CLOSED,
+      };
+      await request(app)
+        .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.BAD_REQUEST);
+    });
+    test(`Should return 400 error if status is otherthan '${status.OPEN}' or '${status.CLOSED}'`, async () => {
+      const updateBody = {
+        status: 'invalidStatus',
+      };
+      await request(app)
+        .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.BAD_REQUEST);
     });
   });
 });

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate } = require('./plugins');
+const { status } = require('../config/transaction');
 
 const deviceTransactionSchema = new mongoose.Schema(
   {
@@ -22,6 +23,16 @@ const deviceTransactionSchema = new mongoose.Schema(
     submittedOn: {
       type: Date,
       default: null,
+    },
+    status: {
+      type: String,
+      validate(value) {
+        if (value !== status.OPEN && value !== status.CLOSED) {
+          throw new Error(`Status can't be other than '${status.OPEN}' or '${status.CLOSED}'`);
+        }
+      },
+      enum: [status.OPEN, status.CLOSED],
+      default: status.OPEN,
     },
   },
   {
