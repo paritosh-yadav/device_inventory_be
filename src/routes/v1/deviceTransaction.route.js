@@ -73,7 +73,7 @@ module.exports = router;
  *                  description: must be a valid mongoose objectId
  *                dueDate:
  *                  type: date
- *                  description: must be a valid date
+ *                  description: must be a valid future date
  *              example:
  *                deviceId: "5fdcbc30a0e5c50e540016cd"
  *                userId: "5fc2790af6a6bbc45afba0d6"
@@ -209,7 +209,7 @@ module.exports = router;
  *              properties:
  *                dueDate:
  *                  type: string
- *                  description: must be valid date
+ *                  description: must be valid future date
  *              example:
  *                dueDate: 2021-06-16T15:16:56.348Z
  *      responses:
