@@ -189,7 +189,7 @@ module.exports = router;
  *
  *    patch:
  *      summary: Update a transaction
- *      description: Transaction details will be updated.
+ *      description: Transaction details will be updated. (dueDate & status can't be updated simultaneously)
  *      tags: [Device Transactions]
  *      security:
  *        - bearerAuth: []
@@ -210,8 +210,12 @@ module.exports = router;
  *                dueDate:
  *                  type: string
  *                  description: must be valid future date
+ *                status:
+ *                  type: string
+ *                  description: To submit the device (close the transaction)
  *              example:
  *                dueDate: 2021-06-16T15:16:56.348Z
+ *                status: "Closed"
  *      responses:
  *        "200":
  *          description: OK
