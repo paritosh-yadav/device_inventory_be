@@ -5,7 +5,7 @@ const setupTestDB = require('../utils/setupTestDB');
 const { Device } = require('../../src/models');
 const { userOne, admin, insertUsers } = require('../fixtures/user.fixture');
 const { mockDeviceOne, mockDeviceTwo, insertDevices, deleteDevice } = require('../fixtures/device.fixture');
-const { createDevicesTransaction } = require('../fixtures/deviceTransaction.fixture');
+const { createDevicesTransaction, mockDeviceTransaction } = require('../fixtures/deviceTransaction.fixture');
 const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
 const app = require('../../src/app');
 
@@ -332,13 +332,9 @@ describe('Device routes', () => {
         id: mockDeviceOne._id.toHexString(),
       });
     });
-    test('should return 200 with device object & userId if data is ok & device is issued', async () => {
-      const mockDeviceTransaction = {
-        deviceId: mockDeviceOne._id,
-        userId: userOne._id,
-        dueDate: '2021-06-05T15:16:54.348Z',
-      };
-      await createDevicesTransaction([mockDeviceTransaction]);
+    test('should return 200 with device object, user info & transactionId if data is ok & device is issued', async () => {
+      const deviceTransaction = await mockDeviceTransaction(mockDeviceOne._id, userOne._id);
+      await createDevicesTransaction([deviceTransaction]);
       const res = await request(app)
         .get(`/v1/devices/${mockDeviceOne._id}`)
         .set('Authorization', `Bearer ${userOneAccessToken}`)
@@ -347,6 +343,7 @@ describe('Device routes', () => {
       expect(res.body).toEqual({
         isIssued: true,
         userId: userOne._id.toString(),
+        transactionId: deviceTransaction._id.toHexString(),
         userName: userOne.name,
         modalName: mockDeviceOne.modalName,
         srNo: mockDeviceOne.srNo,

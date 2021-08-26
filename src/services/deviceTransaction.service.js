@@ -41,7 +41,7 @@ const getTransactionById = async (id) => {
  * @returns {Promise<DeviceTransaction>}
  */
 const getTransactionByDeviceId = async (id) => {
-  return DeviceTransaction.findOne({ deviceId: id, submittedOn: null });
+  return DeviceTransaction.findOne({ deviceId: id, status: status.OPEN });
 };
 
 /**
