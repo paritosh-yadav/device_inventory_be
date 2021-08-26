@@ -25,7 +25,12 @@ const getDevice = catchAsync(async (req, res) => {
   if (device.isIssued) {
     const deviceTransaction = await deviceTransactionService.getTransactionByDeviceId(req.params.deviceId);
     const user = await userService.getUserById(deviceTransaction.userId);
-    device = { ...device.toJSON(), userId: deviceTransaction.userId, userName: user.name };
+    device = {
+      ...device.toJSON(),
+      transactionId: deviceTransaction._id,
+      userId: deviceTransaction.userId,
+      userName: user.name,
+    };
   }
   res.send(device);
 });
