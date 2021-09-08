@@ -28,6 +28,7 @@ const getDevice = catchAsync(async (req, res) => {
     device = {
       ...device.toJSON(),
       transactionId: deviceTransaction._id,
+      dueDate: deviceTransaction.dueDate,
       userId: deviceTransaction.userId,
       userName: user.name,
     };

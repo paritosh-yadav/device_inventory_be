@@ -344,6 +344,7 @@ describe('Device routes', () => {
         isIssued: true,
         userId: userOne._id.toString(),
         transactionId: deviceTransaction._id.toHexString(),
+        dueDate: deviceTransaction.dueDate.toISOString(),
         userName: userOne.name,
         modalName: mockDeviceOne.modalName,
         srNo: mockDeviceOne.srNo,
