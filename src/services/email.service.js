@@ -18,8 +18,8 @@ if (config.env !== 'test') {
  * @param {string} text
  * @returns {Promise}
  */
-const sendEmail = async (to, subject, text) => {
-  const msg = { from: config.email.from, to, subject, text };
+const sendEmail = async (to, subject, html) => {
+  const msg = { from: config.email.from, to, subject, html };
   await transport.sendMail(msg);
 };
 
@@ -32,11 +32,29 @@ const sendEmail = async (to, subject, text) => {
 const sendResetPasswordEmail = async (to, token) => {
   const subject = 'Reset password';
   // replace this url with the link to the reset password page of your front-end app
-  const resetPasswordUrl = `deviceinventory://reset-password?token=${token}`;
-  const text = `Dear user,
-  To reset your password, click on this link: ${resetPasswordUrl}
-  If you did not request any password resets, then ignore this email.`;
-  await sendEmail(to, subject, text);
+  const resetPasswordUrl = `deviceinventory://reset-password/${token}`;
+  // const text = `Dear user,
+  // To reset your password, click on this link: ${resetPasswordUrl}
+  // If you did not request any password resets, then ignore this email.`;
+
+  const html = `
+  <p>Dear user,</p>
+  <p>To reset your password, click on this <a href="${resetPasswordUrl}">link:</a></p>
+  <form action="https://deviceinventory.com/reset-password/${token}" method="get">
+    <input type=submit value=Final />
+  </form>
+  <form action=${resetPasswordUrl} method="get">
+    <input type=submit value=ResetPassword />
+  </form>
+  <button onclick="myFunction()">Redirect</button>
+  <p>If you did not request any password resets, then ignore this email.</p>
+  
+  <script>
+  function myFunction() {
+  window.location.href = "${resetPasswordUrl}";
+  }
+  </script>`;
+  await sendEmail(to, subject, html);
 };
 
 module.exports = {
