@@ -4,6 +4,7 @@ const userRoute = require('./user.route');
 const docsRoute = require('./docs.route');
 const deviceRoute = require('./device.route');
 const deviceTransaction = require('./deviceTransaction.route');
+const aasaTransaction = require('./aasa.route');
 
 const router = express.Router();
 
@@ -12,5 +13,6 @@ router.use('/users', userRoute);
 router.use('/docs', docsRoute);
 router.use('/devices', deviceRoute);
 router.use('/deviceTransactions', deviceTransaction);
+router.use('/apple-app-site-association', aasaTransaction);
 
 module.exports = router;
