@@ -3,7 +3,7 @@ const { aasaController } = require('../../controllers');
 
 const router = express.Router();
 
-router.route('/').get(aasaController.getAASAFile);
+router.route('/apple-app-site-association').get(aasaController.getAASAFile);
 module.exports = router;
 
 /**
