@@ -1,15 +1,5 @@
 components:
   schemas:
-    AASA:
-      type: object
-      properties:
-        appID:
-          type: string
-        paths:
-          type: string
-      example:
-        appID: KYLFT3T637.com.michelin.deviceinventory
-        paths: ['*', '/']
     User:
       type: object
       properties:
