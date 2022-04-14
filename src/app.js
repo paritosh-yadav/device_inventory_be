@@ -9,7 +9,6 @@ const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
-const routesAASA = require('./routes/v1/aasa.route');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 
@@ -47,7 +46,7 @@ if (config.env === 'production') {
 
 // v1 api routes
 app.use('/v1', routes);
-app.use('/', routesAASA);
+app.use(express.static('public'));
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
