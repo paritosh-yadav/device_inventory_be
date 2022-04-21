@@ -31,29 +31,25 @@ const sendEmail = async (to, subject, html) => {
  */
 const sendResetPasswordEmail = async (to, token) => {
   const subject = 'Reset password';
-  // replace this url with the link to the reset password page of your front-end app
   const resetPasswordUrl = `https://device-inventory.herokuapp.com/reset-password/${token}`;
-  // const text = `Dear user,
-  // To reset your password, click on this link: ${resetPasswordUrl}
-  // If you did not request any password resets, then ignore this email.`;
-
   const html = `
+  <head>
+  <style>
+    div {
+      display:flex;
+      align-items: center;
+    }
+  </style>
+  </head>
   <p>Dear user,</p>
-  <p>To reset your password, click on this <a href="${resetPasswordUrl}">link:</a></p>
-  <form action="https://device-inventory.herokuapp.com/reset-password/${token}" method="get">
-    <input type=submit value=Final />
-  </form>
+  <div>
+  <p>To reset your password, click on</p>
   <form action=${resetPasswordUrl} method="get">
     <input type=submit value=ResetPassword />
   </form>
-  <button onclick="myFunction()">Redirect</button>
+  </div>
   <p>If you did not request any password resets, then ignore this email.</p>
-  
-  <script>
-  function myFunction() {
-  window.location.href = "${resetPasswordUrl}";
-  }
-  </script>`;
+  `;
   await sendEmail(to, subject, html);
 };
 

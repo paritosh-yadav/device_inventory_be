@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "DeviceInventory",
+      "package_name": "com.deviceinventory",
+      "sha256_cert_fingerprints": [
+        "D9:8C:37:F6:56:CA:F5:48:26:70:85:4E:12:C1:1E:53:E3:8F:76:6A:C9:FC:88:0F:D9:C4:6C:2A:4B:53:49:79"
+      ]
+    }
+  }
+]
