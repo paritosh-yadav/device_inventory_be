@@ -109,6 +109,13 @@ module.exports = router;
  *            type: string
  *          description: User identifier
  *        - in: query
+ *          name: status
+ *          schema:
+ *            type: string
+ *            enum: [Open, Closed, booking-on-hold, submission-on-hold]
+ *            example: Open
+ *          description: device transaction status
+ *        - in: query
  *          name: sortBy
  *          schema:
  *            type: string

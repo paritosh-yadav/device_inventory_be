@@ -105,12 +105,12 @@ module.exports = router;
  *            type: string
  *          description: Device modal name
  *        - in: query
- *          name: isIssued
+ *          name: deviceStatus
  *          schema:
- *            type: boolean
- *            enum: [true, false]
- *            example: true
- *          description: Devices status
+ *            type: string
+ *            enum: [available, booked, booking-pending, submission-pending]
+ *            example: available
+ *          description: Devices availability status
  *        - in: query
  *          name: sortBy
  *          schema:
@@ -231,8 +231,8 @@ module.exports = router;
  *                picture:
  *                  type: string
  *                  description: (Optional) must be a vaild url
- *                isIssued:
- *                   type: boolean
+ *                deviceStatus:
+ *                   type: string
  *              example:
  *                modalName: iPhone 12
  *                srNo: 123dadda1
@@ -241,7 +241,7 @@ module.exports = router;
  *                category: Mobile
  *                manufacturer: Apple
  *                picture: http://placeimg.com/640/480,
- *                isIssued: true
+ *                deviceStatus: booked
  *      responses:
  *        "200":
  *          description: OK

@@ -38,8 +38,8 @@ components:
           type: String
         picture:
           type: String
-        isIssued:
-          type: Boolean
+        deviceStatus:
+          type: String
       example:
         id: 5ebac534954b54139806c112
         modalName: iPhone 12,
@@ -49,7 +49,7 @@ components:
         category: Mobile,
         manufacturer: Apple,
         picture: http://placeimg.com/640/480,
-        isIssued: true
+        deviceStatus: booked
 
     DeviceTransactions:
       type: object

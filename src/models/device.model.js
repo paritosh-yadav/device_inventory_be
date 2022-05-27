@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const { toJSON, paginate } = require('./plugins');
+const { deviceStatusesList } = require('../config/deviceStatus');
 
 const deviceSchema = new mongoose.Schema(
   {
@@ -76,9 +77,9 @@ const deviceSchema = new mongoose.Schema(
         }
       },
     },
-    isIssued: {
-      type: Boolean,
-      default: false,
+    deviceStatus: {
+      type: String,
+      default: deviceStatusesList.AVAILABLE,
     },
   },
   {

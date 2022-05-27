@@ -14,6 +14,7 @@ const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixt
 const app = require('../../src/app');
 const { Device, DeviceTransaction } = require('../../src/models');
 const { status } = require('../../src/config/transaction');
+const { deviceStatusesList } = require('../../src/config/deviceStatus');
 
 setupTestDB();
 
@@ -58,7 +59,7 @@ describe('Device transaction route', () => {
         userId: newTransaction.userId.toString(),
         issuedOn: expect.anything(),
         dueDate: new Date(newTransaction.dueDate).toISOString(),
-        status: status.OPEN,
+        status: status.BOOKING_HOLD,
         submittedOn: null,
       });
 
@@ -74,10 +75,10 @@ describe('Device transaction route', () => {
         submittedOn: null,
       });
 
-      // If device's "isIssued" has been set to "true" or not
+      // If device's "deviceStatus" has been set to "booking-pending" or not
       const dbDevice = await Device.findById(deviceRes.body.id);
       expect(dbDevice).toBeDefined();
-      expect(dbDevice.isIssued).toBe(true);
+      expect(dbDevice.deviceStatus).toBe(deviceStatusesList.BOOKING_PENDING);
     });
 
     test('should return 401 error if access token is missing', async () => {
@@ -165,11 +166,23 @@ describe('Device transaction route', () => {
       expect(res.body.results).toHaveLength(1);
       expect(res.body.results[0]).toMatchObject({
         id: deviceTransaction._id.toHexString(),
-        deviceId: mockDeviceOne._id.toString(),
-        userId: admin._id.toString(),
+        deviceId: {
+          id: mockDeviceOne._id.toString(),
+          modalName: mockDeviceOne.modalName,
+          srNo: mockDeviceOne.srNo,
+          uuid: mockDeviceOne.uuid,
+          variant: mockDeviceOne.variant,
+          category: mockDeviceOne.category,
+          manufacturer: mockDeviceOne.manufacturer,
+          picture: mockDeviceOne.picture,
+        },
+        userId: {
+          id: admin._id.toString(),
+          name: admin.name,
+        },
         dueDate: new Date(deviceTransaction.dueDate).toISOString(),
         submittedOn: null,
-        status: status.OPEN,
+        status: status.BOOKING_HOLD,
       });
     });
     test('should return 401 if access token is missing', async () => {
@@ -177,17 +190,15 @@ describe('Device transaction route', () => {
     });
     test('should correctly apply filter on deviceId field', async () => {
       await insertDevices([mockDeviceTwo]);
-      await createDevicesTransaction([
-        mockDeviceTransaction(mockDeviceOne._id, admin._id),
-        mockDeviceTransaction(mockDeviceTwo._id, admin._id),
-      ]);
+      const mockDeviceTransactionOne = mockDeviceTransaction(mockDeviceOne._id, admin._id);
+      const mockDeviceTransactionTwo = mockDeviceTransaction(mockDeviceTwo._id, admin._id);
+      await createDevicesTransaction([mockDeviceTransactionOne, mockDeviceTransactionTwo]);
       const res = await request(app)
         .get('/v1/deviceTransactions')
         .set('Authorization', `Bearer ${adminAccessToken}`)
         .query({ deviceId: mockDeviceOne._id.toHexString() })
         .send()
         .expect(httpStatus.OK);
-
       expect(res.body).toEqual({
         results: expect.any(Array),
         page: 1,
@@ -196,15 +207,34 @@ describe('Device transaction route', () => {
         totalResults: 1,
       });
       expect(res.body.results).toHaveLength(1);
-      expect(res.body.results[0].deviceId).toBe(mockDeviceOne._id.toHexString());
+      expect(res.body.results[0]).toStrictEqual({
+        id: mockDeviceTransactionOne._id.toHexString(),
+        deviceId: {
+          id: mockDeviceOne._id.toString(),
+          modalName: mockDeviceOne.modalName,
+          srNo: mockDeviceOne.srNo,
+          uuid: mockDeviceOne.uuid,
+          variant: mockDeviceOne.variant,
+          category: mockDeviceOne.category,
+          manufacturer: mockDeviceOne.manufacturer,
+          picture: mockDeviceOne.picture,
+        },
+        userId: {
+          id: admin._id.toString(),
+          name: admin.name,
+        },
+        issuedOn: expect.anything(),
+        dueDate: new Date(mockDeviceTransactionOne.dueDate).toISOString(),
+        submittedOn: null,
+        status: status.BOOKING_HOLD,
+      });
     });
     test('should correctly apply filter on userId field', async () => {
       await insertUsers([userOne]);
       await insertDevices([mockDeviceTwo]);
-      await createDevicesTransaction([
-        mockDeviceTransaction(mockDeviceOne._id, admin._id),
-        mockDeviceTransaction(mockDeviceTwo._id, userOne._id),
-      ]);
+      const mockDeviceTransactionOne = mockDeviceTransaction(mockDeviceOne._id, admin._id);
+      const mockDeviceTransactionTwo = mockDeviceTransaction(mockDeviceTwo._id, userOne._id);
+      await createDevicesTransaction([mockDeviceTransactionOne, mockDeviceTransactionTwo]);
       const res = await request(app)
         .get('/v1/deviceTransactions')
         .set('Authorization', `Bearer ${adminAccessToken}`)
@@ -219,7 +249,68 @@ describe('Device transaction route', () => {
         totalResults: 1,
       });
       expect(res.body.results).toHaveLength(1);
-      expect(res.body.results[0].userId).toBe(admin._id.toHexString());
+      expect(res.body.results[0]).toStrictEqual({
+        id: mockDeviceTransactionOne._id.toHexString(),
+        deviceId: {
+          id: mockDeviceOne._id.toString(),
+          modalName: mockDeviceOne.modalName,
+          srNo: mockDeviceOne.srNo,
+          uuid: mockDeviceOne.uuid,
+          variant: mockDeviceOne.variant,
+          category: mockDeviceOne.category,
+          manufacturer: mockDeviceOne.manufacturer,
+          picture: mockDeviceOne.picture,
+        },
+        userId: {
+          id: admin._id.toString(),
+          name: admin.name,
+        },
+        issuedOn: expect.anything(),
+        dueDate: expect.anything(),
+        submittedOn: null,
+        status: status.BOOKING_HOLD,
+      });
+    });
+    test('should correctly apply filter on status field', async () => {
+      await insertDevices([mockDeviceTwo]);
+      let modifiedMockTransaction = mockDeviceTransaction(mockDeviceTwo._id, admin._id);
+      modifiedMockTransaction = { ...modifiedMockTransaction, status: status.SUBMISSION_HOLD };
+      await createDevicesTransaction([mockDeviceTransaction(mockDeviceOne._id, admin._id), modifiedMockTransaction]);
+      const res = await request(app)
+        .get('/v1/deviceTransactions')
+        .set('Authorization', `Bearer ${adminAccessToken}`)
+        .query({ status: `${status.SUBMISSION_HOLD}, ${status.OPEN}s` })
+        .send()
+        .expect(httpStatus.OK);
+      expect(res.body).toEqual({
+        results: expect.any(Array),
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+        totalResults: 1,
+      });
+      expect(res.body.results).toHaveLength(1);
+      expect(res.body.results[0]).toStrictEqual({
+        id: modifiedMockTransaction._id.toHexString(),
+        deviceId: {
+          id: mockDeviceTwo._id.toString(),
+          modalName: mockDeviceTwo.modalName,
+          srNo: mockDeviceTwo.srNo,
+          uuid: mockDeviceTwo.uuid,
+          variant: mockDeviceTwo.variant,
+          category: mockDeviceTwo.category,
+          manufacturer: mockDeviceTwo.manufacturer,
+          picture: mockDeviceTwo.picture,
+        },
+        userId: {
+          id: admin._id.toString(),
+          name: admin.name,
+        },
+        issuedOn: expect.anything(),
+        dueDate: expect.anything(),
+        submittedOn: null,
+        status: modifiedMockTransaction.status,
+      });
     });
     test('should correctly sort the returned array if descending sort param is specified', async () => {
       await insertDevices([mockDeviceTwo]);
@@ -338,9 +429,14 @@ describe('Device transaction route', () => {
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send()
         .expect(httpStatus.OK);
+      const mockDeviceOneWithoutId = {};
+      Object.assign(mockDeviceOneWithoutId, mockDeviceOne);
+      delete mockDeviceOneWithoutId._id;
       expect(res.body).toMatchObject({
         submittedOn: null,
-        status: status.OPEN,
+        userName: userOne.name,
+        device: mockDeviceOneWithoutId,
+        status: deviceTransaction.status,
         deviceId: deviceTransaction.deviceId.toHexString(),
         userId: deviceTransaction.userId.toHexString(),
         dueDate: deviceTransaction.dueDate.toISOString(),
@@ -398,7 +494,6 @@ describe('Device transaction route', () => {
     test('should return 400 if transaction is not closed', async () => {
       await insertDevices([mockDeviceTwo]);
       const deviceTransactionTwo = mockDeviceTransaction(mockDeviceTwo._id, admin._id);
-      deviceTransactionTwo.status = status.OPEN;
       await createDevicesTransaction([deviceTransactionTwo]);
       await request(app)
         .delete(`/v1/deviceTransactions/${deviceTransactionTwo._id}`)
@@ -455,7 +550,7 @@ describe('Device transaction route', () => {
         dueDate: updateBody.dueDate.toISOString(),
       });
     });
-    test('should return 200 and close the transaction & set isIssued to "false" if "status" is "closed"', async () => {
+    test(`should return 200 and close the transaction & set deviceStatus to "${deviceStatusesList.AVAILABLE}" if "status" is "${status.CLOSED}"`, async () => {
       const updateBody = {
         status: status.CLOSED,
       };
@@ -472,10 +567,52 @@ describe('Device transaction route', () => {
 
       expect(res.body.submittedOn).not.toBeNull();
 
-      // If device's "isIssued" has been set to "false" or not
+      // If device's "deviceStatus" has been set to "available" or not
       const dbDevice = await Device.findById(deviceTransaction.deviceId);
       expect(dbDevice).toBeDefined();
-      expect(dbDevice.isIssued).toBe(false);
+      expect(dbDevice.deviceStatus).toBe(deviceStatusesList.AVAILABLE);
+    });
+
+    test(`should return 200 and chnage deviceStatus to "${deviceStatusesList.BOOKED}" if transaction status is "${status.OPEN}"`, async () => {
+      const updateBody = {
+        status: status.OPEN,
+      };
+      const res = await request(app)
+        .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.OK);
+
+      expect(res.body).toMatchObject({
+        id: deviceTransaction._id.toHexString(),
+        status: updateBody.status,
+      });
+
+      // If "deviceStatus" has been set to "booked" or not
+      const dbDevice = await Device.findById(deviceTransaction.deviceId);
+      expect(dbDevice).toBeDefined();
+      expect(dbDevice.deviceStatus).toBe(deviceStatusesList.BOOKED);
+    });
+
+    test(`should return 200 and chnage deviceStatus to "${deviceStatusesList.SUBMISSION_PENDING}" if transaction status is "${status.SUBMISSION_HOLD}"`, async () => {
+      const updateBody = {
+        status: status.SUBMISSION_HOLD,
+      };
+      const res = await request(app)
+        .patch(`/v1/deviceTransactions/${deviceTransaction._id}`)
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(updateBody)
+        .expect(httpStatus.OK);
+
+      expect(res.body).toMatchObject({
+        id: deviceTransaction._id.toHexString(),
+        status: updateBody.status,
+      });
+
+      // If "deviceStatus" has been set to "submission-pending" or not
+      const dbDevice = await Device.findById(deviceTransaction.deviceId);
+      expect(dbDevice).toBeDefined();
+      expect(dbDevice.deviceStatus).toBe(deviceStatusesList.SUBMISSION_PENDING);
     });
 
     test('should return 401 error if access token is missing', async () => {
@@ -549,7 +686,7 @@ describe('Device transaction route', () => {
         .send(updateBody)
         .expect(httpStatus.BAD_REQUEST);
     });
-    test(`Should return 400 error if status is otherthan '${status.OPEN}' or '${status.CLOSED}'`, async () => {
+    test(`Should return 400 error if status is otherthan '${status.OPEN}' or '${status.CLOSED}' or '${status.BOOKING_HOLD}' or '${status.SUBMISSION_HOLD}'`, async () => {
       const updateBody = {
         status: 'invalidStatus',
       };
