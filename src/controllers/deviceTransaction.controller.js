@@ -3,41 +3,62 @@ const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const pick = require('../utils/pick');
 const { status } = require('../config/transaction');
-const { deviceTransactionService, deviceService } = require('../services');
+const { deviceStatusesList } = require('../config/deviceStatus');
+const { deviceTransactionService, deviceService, userService } = require('../services');
 
 const createDeviceTransaction = catchAsync(async (req, res) => {
   const deviceTransaction = await deviceTransactionService.createDeviceTransaction(req.body);
-  await deviceService.updateDeviceById(req.body.deviceId, { isIssued: true });
+  await deviceService.updateDeviceById(req.body.deviceId, { deviceStatus: deviceStatusesList.BOOKING_PENDING });
   res.status(httpStatus.CREATED).send(deviceTransaction);
 });
 
 const getDeviceTransactions = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['deviceId', 'userId']);
+  const filter = pick(req.query, ['deviceId', 'userId', 'status']);
+  if (filter.status) {
+    filter.status = { $in: filter.status.replace(/ /g, '').split(',') };
+  }
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const devices = await deviceTransactionService.getDeviceTransactions(filter, options);
   res.send(devices);
 });
 
 const getDeviceTransaction = catchAsync(async (req, res) => {
-  const deviceTransaction = await deviceTransactionService.getTransactionById(req.params.transactionId);
+  let deviceTransaction = await deviceTransactionService.getTransactionById(req.params.transactionId);
   if (!deviceTransaction) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Device transaction not found');
   }
+  const user = await userService.getUserById(deviceTransaction.userId);
+  const device = await deviceService.getDeviceById(deviceTransaction.deviceId);
+  deviceTransaction = {
+    ...deviceTransaction.toJSON(),
+    device,
+    userName: user.name,
+  };
   res.send(deviceTransaction);
 });
 
 const updateDeviceTransaction = catchAsync(async (req, res) => {
-  let deviceTransaction;
+  const deviceTransaction = await deviceTransactionService.updateDeviceTransactionById(
+    req.params.transactionId,
+    req.body.status === status.CLOSED
+      ? {
+          ...req.body,
+          submittedOn: Date.now(),
+        }
+      : req.body
+  );
+  const deviceUsedInTransaction = await deviceTransactionService.getTransactionById(req.params.transactionId);
+  let updatedDeviceStatus;
   if (req.body.status === status.CLOSED) {
-    deviceTransaction = await deviceTransactionService.updateDeviceTransactionById(req.params.transactionId, {
-      ...req.body,
-      submittedOn: Date.now(),
-    });
-    const device = await deviceTransactionService.getTransactionById(req.params.transactionId);
-    await deviceService.updateDeviceById(device.deviceId, { isIssued: false });
-  } else {
-    deviceTransaction = await deviceTransactionService.updateDeviceTransactionById(req.params.transactionId, req.body);
+    updatedDeviceStatus = deviceStatusesList.AVAILABLE;
+  } else if (req.body.status === status.OPEN) {
+    updatedDeviceStatus = deviceStatusesList.BOOKED;
+  } else if (req.body.status === status.SUBMISSION_HOLD) {
+    updatedDeviceStatus = deviceStatusesList.SUBMISSION_PENDING;
   }
+  await deviceService.updateDeviceById(deviceUsedInTransaction.deviceId, {
+    deviceStatus: updatedDeviceStatus,
+  });
   res.send(deviceTransaction);
 });
 

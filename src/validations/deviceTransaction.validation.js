@@ -14,6 +14,7 @@ const getDeviceTransactions = {
   query: joi.object().keys({
     deviceId: joi.string().custom(objectId),
     userId: joi.string().custom(objectId),
+    status: joi.string(),
     sortBy: joi.string(),
     limit: joi.number().integer(),
     page: joi.number().integer(),
@@ -34,7 +35,7 @@ const updateDeviceTransaction = {
     .object()
     .keys({
       dueDate: joi.date().iso(),
-      status: joi.any().valid(status.OPEN, status.CLOSED),
+      status: joi.any().valid(status.OPEN, status.CLOSED, status.BOOKING_HOLD, status.SUBMISSION_HOLD),
     })
     .min(1),
 };

@@ -3,6 +3,7 @@ const { DeviceTransaction } = require('../models');
 const { getDeviceById } = require('./device.service');
 const ApiError = require('../utils/ApiError');
 const { status } = require('../config/transaction');
+const { deviceStatusesList } = require('../config/deviceStatus');
 /**
  * Add a device
  * @param {Object} deviceBody
@@ -12,9 +13,9 @@ const { status } = require('../config/transaction');
 const createDeviceTransaction = async (deviceTransactionBody) => {
   try {
     const device = await getDeviceById(deviceTransactionBody.deviceId);
-    if (device.isIssued)
+    if (device.deviceStatus !== deviceStatusesList.AVAILABLE)
       if (deviceTransactionBody.deviceId && (await DeviceTransaction.isDeviceBooked(deviceTransactionBody.deviceId))) {
-        throw new Error('This device already booked.');
+        throw new Error('This device is not available.');
       }
     if (deviceTransactionBody.dueDate <= new Date()) {
       throw new Error("Due date can't be same or back date.");
@@ -40,8 +41,8 @@ const getTransactionById = async (id) => {
  * @param {ObjectId} id
  * @returns {Promise<DeviceTransaction>}
  */
-const getTransactionByDeviceId = async (id) => {
-  return DeviceTransaction.findOne({ deviceId: id, status: status.OPEN });
+const getUnclosedTransactionByDeviceId = async (id) => {
+  return DeviceTransaction.findOne({ deviceId: id, status: { $ne: status.CLOSED } });
 };
 
 /**
@@ -102,7 +103,7 @@ module.exports = {
   createDeviceTransaction,
   getDeviceTransactions,
   getTransactionById,
-  getTransactionByDeviceId,
+  getUnclosedTransactionByDeviceId,
   updateDeviceTransactionById,
   deleteDeviceTransactionById,
 };

@@ -6,10 +6,12 @@ const deviceTransactionSchema = new mongoose.Schema(
   {
     deviceId: {
       type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Device',
       required: true,
     },
     userId: {
       type: mongoose.SchemaTypes.ObjectId,
+      ref: 'User',
       required: true,
     },
     issuedOn: {
@@ -27,12 +29,19 @@ const deviceTransactionSchema = new mongoose.Schema(
     status: {
       type: String,
       validate(value) {
-        if (value !== status.OPEN && value !== status.CLOSED) {
-          throw new Error(`Status can't be other than '${status.OPEN}' or '${status.CLOSED}'`);
+        if (
+          value !== status.OPEN &&
+          value !== status.CLOSED &&
+          value !== status.BOOKING_HOLD &&
+          value !== status.SUBMISSION_HOLD
+        ) {
+          throw new Error(
+            `Status can't be other than '${status.OPEN}' or '${status.CLOSED}' or '${status.BOOKING_HOLD}' or '${status.SUBMISSION_HOLD}'`
+          );
         }
       },
-      enum: [status.OPEN, status.CLOSED],
-      default: status.OPEN,
+      enum: [status.OPEN, status.CLOSED, status.BOOKING_HOLD, status.SUBMISSION_HOLD],
+      default: status.BOOKING_HOLD,
     },
   },
   {

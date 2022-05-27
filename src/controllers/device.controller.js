@@ -3,6 +3,7 @@ const { deviceService, deviceTransactionService, userService } = require('../ser
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const pick = require('../utils/pick');
+const { deviceStatusesList } = require('../config/deviceStatus');
 
 const addDevice = catchAsync(async (req, res) => {
   const device = await deviceService.addDevice(req.body);
@@ -10,7 +11,7 @@ const addDevice = catchAsync(async (req, res) => {
 });
 
 const getDevices = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['modalName', 'isIssued']);
+  const filter = pick(req.query, ['modalName', 'deviceStatus']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const devices = await deviceService.getDevices(filter, options);
   res.send(devices);
@@ -21,9 +22,9 @@ const getDevice = catchAsync(async (req, res) => {
   if (!device) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Device not found');
   }
-  // Fetching transaction if device is booked already, hence attaching usedId to response
-  if (device.isIssued) {
-    const deviceTransaction = await deviceTransactionService.getTransactionByDeviceId(req.params.deviceId);
+  // Fetching transaction if device is not available, hence attaching usedId to response
+  if (device.deviceStatus !== deviceStatusesList.AVAILABLE) {
+    const deviceTransaction = await deviceTransactionService.getUnclosedTransactionByDeviceId(req.params.deviceId);
     const user = await userService.getUserById(deviceTransaction.userId);
     device = {
       ...device.toJSON(),

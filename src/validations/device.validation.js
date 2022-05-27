@@ -1,5 +1,6 @@
 const joi = require('joi');
 const { objectId } = require('./custom.validation');
+const { deviceStatusesList } = require('../config/deviceStatus');
 
 const addDevice = {
   body: joi.object().keys({
@@ -10,14 +11,28 @@ const addDevice = {
     category: joi.string().required(),
     manufacturer: joi.string().required(),
     picture: joi.string().uri(),
-    isIssued: joi.boolean(),
+    deviceStatus: joi
+      .string()
+      .valid(
+        deviceStatusesList.AVAILABLE,
+        deviceStatusesList.BOOKED,
+        deviceStatusesList.BOOKING_PENDING,
+        deviceStatusesList.SUBMISSION_PENDING
+      ),
   }),
 };
 
 const getDevices = {
   query: joi.object().keys({
     modalName: joi.string(),
-    isIssued: joi.boolean(),
+    deviceStatus: joi
+      .string()
+      .valid(
+        deviceStatusesList.AVAILABLE,
+        deviceStatusesList.BOOKED,
+        deviceStatusesList.BOOKING_PENDING,
+        deviceStatusesList.SUBMISSION_PENDING
+      ),
     sortBy: joi.string(),
     limit: joi.number().integer(),
     page: joi.number().integer(),
@@ -44,7 +59,14 @@ const updateDevice = {
       category: joi.string().regex(/^[A-Za-z]+$/),
       manufacturer: joi.string().regex(/^[A-Za-z\s]+$/),
       picture: joi.string().uri(),
-      isIssued: joi.boolean(),
+      deviceStatus: joi
+        .string()
+        .valid(
+          deviceStatusesList.AVAILABLE,
+          deviceStatusesList.BOOKED,
+          deviceStatusesList.BOOKING_PENDING,
+          deviceStatusesList.SUBMISSION_PENDING
+        ),
     })
     .min(1),
 };

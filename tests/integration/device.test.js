@@ -3,6 +3,7 @@ const request = require('supertest');
 const httpStatus = require('http-status');
 const setupTestDB = require('../utils/setupTestDB');
 const { Device } = require('../../src/models');
+const { deviceStatusesList } = require('../../src/config/deviceStatus');
 const { userOne, admin, insertUsers } = require('../fixtures/user.fixture');
 const { mockDeviceOne, mockDeviceTwo, insertDevices, deleteDevice } = require('../fixtures/device.fixture');
 const { createDevicesTransaction, mockDeviceTransaction } = require('../fixtures/deviceTransaction.fixture');
@@ -51,7 +52,7 @@ describe('Device routes', () => {
         category: newDevice.category,
         manufacturer: newDevice.manufacturer,
         picture: newDevice.picture,
-        isIssued: false,
+        deviceStatus: deviceStatusesList.AVAILABLE,
       });
 
       const dbDevice = await Device.findById(res.body.id);
@@ -66,6 +67,7 @@ describe('Device routes', () => {
         category: newDevice.category,
         manufacturer: newDevice.manufacturer,
         picture: newDevice.picture,
+        deviceStatus: deviceStatusesList.AVAILABLE,
       });
     });
     test('should return 401 error is access token is missing', async () => {
@@ -161,7 +163,7 @@ describe('Device routes', () => {
       });
       expect(res.body.results).toHaveLength(1);
       expect(res.body.results[0]).toEqual({
-        isIssued: false,
+        deviceStatus: deviceStatusesList.AVAILABLE,
         modalName: mockDeviceOne.modalName,
         srNo: mockDeviceOne.srNo,
         uuid: mockDeviceOne.uuid,
@@ -194,13 +196,13 @@ describe('Device routes', () => {
       expect(res.body.results).toHaveLength(1);
       expect(res.body.results[0].id).toBe(mockDeviceOne._id.toHexString());
     });
-    test('should correctly apply filter on isIssued field', async () => {
-      const modifiedMockDevice = { ...mockDeviceOne, isIssued: true };
+    test('should correctly apply filter on deviceStatus field', async () => {
+      const modifiedMockDevice = { ...mockDeviceOne, deviceStatus: deviceStatusesList.BOOKED };
       await insertDevices([modifiedMockDevice, mockDeviceTwo]);
       const res = await request(app)
         .get('/v1/devices')
         .set('Authorization', `Bearer ${userOneAccessToken}`)
-        .query({ isIssued: modifiedMockDevice.isIssued })
+        .query({ deviceStatus: modifiedMockDevice.deviceStatus })
         .send()
         .expect(httpStatus.OK);
       expect(res.body).toEqual({
@@ -321,7 +323,7 @@ describe('Device routes', () => {
         .expect(httpStatus.OK);
 
       expect(res.body).toEqual({
-        isIssued: false,
+        deviceStatus: deviceStatusesList.AVAILABLE,
         modalName: mockDeviceOne.modalName,
         srNo: mockDeviceOne.srNo,
         uuid: mockDeviceOne.uuid,
@@ -341,7 +343,7 @@ describe('Device routes', () => {
         .send()
         .expect(httpStatus.OK);
       expect(res.body).toEqual({
-        isIssued: true,
+        deviceStatus: deviceStatusesList.BOOKING_PENDING,
         userId: userOne._id.toString(),
         transactionId: deviceTransaction._id.toHexString(),
         dueDate: deviceTransaction.dueDate.toISOString(),
@@ -436,7 +438,7 @@ describe('Device routes', () => {
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
         picture: faker.image.imageUrl(),
-        isIssued: faker.datatype.boolean(),
+        deviceStatus: deviceStatusesList.BOOKED,
       };
 
       const res = await request(app)
@@ -454,7 +456,7 @@ describe('Device routes', () => {
         category: updateBody.category,
         manufacturer: updateBody.manufacturer,
         picture: updateBody.picture,
-        isIssued: updateBody.isIssued,
+        deviceStatus: updateBody.deviceStatus,
       });
     });
     test('should return 401 error if access token is missing', async () => {
@@ -465,7 +467,7 @@ describe('Device routes', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
-        isIssued: faker.datatype.boolean(),
+        deviceStatus: deviceStatusesList.BOOKED,
       };
       await request(app).patch(`/v1/devices/${mockDeviceOne._id}`).send(updateBody).expect(httpStatus.UNAUTHORIZED);
     });
@@ -477,7 +479,7 @@ describe('Device routes', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
-        isIssued: faker.datatype.boolean(),
+        deviceStatus: deviceStatusesList.BOOKED,
       };
 
       await request(app)
@@ -494,7 +496,7 @@ describe('Device routes', () => {
         variant: faker.random.alphaNumeric(),
         category: faker.random.alpha(),
         manufacturer: faker.random.alpha(),
-        isIssued: faker.datatype.boolean(),
+        deviceStatus: deviceStatusesList.BOOKED,
       };
 
       await request(app)
@@ -597,9 +599,9 @@ describe('Device routes', () => {
         .send(updateBody)
         .expect(httpStatus.BAD_REQUEST);
     });
-    test('should return 400 if isIssued should be boolean', async () => {
+    test(`should return 400 if deviceStatus is other than ${deviceStatusesList.AVAILABLE}|${deviceStatusesList.BOOKED}|${deviceStatusesList.BOOKING_PENDING}|${deviceStatusesList.SUBMISSION_PENDING}`, async () => {
       const updateBody = {
-        isIssued: 'non-boolean',
+        deviceStatus: 'random-status',
       };
       await request(app)
         .patch(`/v1/devices/${mockDeviceOne._id}`)
